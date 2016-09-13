@@ -22,7 +22,7 @@ Simulator.prototype.init = function(){
   
   var self = this;
   var xhr = new XMLHttpRequest();
-  xhr.open("POST", "https://iotdemos.scriptrapps.io/demandables/simulation/parkingsearch/api/createParkingSpots");
+  xhr.open("POST", "https://iotdemos.scriptrapps.io/simulation/demandables/parkingsearch/api/createParkingSpots");
   xhr.onload = function() {
   	self.listParkingSpots();   
   }
