@@ -1,0 +1,416 @@
+var util = require("./util");
+var documents = require("document");
+var providerFactory = require("./providers/providerfactory");
+
+// Intialize log
+var log = require("log"); log.setLevel("info");
+
+/**
+ * Abstract base class for any type of client object that can be allocated a given purpose
+ * @class Worker
+ * @constructor
+ * @param {Object} [dto]
+ * @param {String} [dto.inherits]: optional. Use it only for inheritence purposes.
+ * @param {String} [dto.id]: if provided, the instance loads its data from the storage, based on the provided id. Any other parameter (except processId) is ignored.
+ * @param {String} [dto.processId]: the process (orchestration) to which this instance belongs
+ * @param {Boolean} [dto.reassignable] : optional. If true, specifies that the worker's purpose can change in time before it is reached. Defaults to false. 
+ * @param {Boolean} [dto.confirmable] : optional. If true means whenever the worker reaches its pupose, the "confirmed" attribute has to be true before work is considered done
+ * i.e the work() method can return true. Defaults to false.
+ * @param {Boolean} [dto.generateData]: optional. If true, ask the current instance to generate data for simulation purposes
+ * @param {Object} [dto.meta]: optional. Metadata used when persisting the properties of the worker into a document. Associate a field name to its type (e.g. "text")
+ * @throws {Error}
+ */
+function Worker(dto) {
+ 
+  if (dto && dto.inherits){
+    return;
+  }
+ 
+  if (!dto) {
+    
+      throw {
+
+        errorCode: "Missing_Parameter",
+        errorDetail: this.getType() + " dto cannot be null or empty"
+      }
+    }
+ 
+  // if id is provided, load the instance's data from the peristence layer
+  if (dto.id) {
+    
+    this.id = dto.id;
+    this._load();
+  }else { // if no id is provided, create a new worker instance
+    
+    if (!dto.processId) {
+    
+      throw {
+
+        errorCode: "Missing_Parameter",
+        errorDetail: this.getType() + " dto.processId cannot be null or empty"
+      }
+    }
+    
+    this.id = util.generateId();
+    this.processId = dto.processId;
+    this.reassignable = dto.reassignable ? dto.reassignable : false;
+    this.running = false;
+    this.stopped = true;
+    this.working = false;
+    this.purpose = null;
+    this.purposeAchieved = false;
+    if (dto.confirmable) {
+      
+      this.confirmable = dto.confirmable; 
+      this.confirmed = false;
+    }else {      
+      this.confirmable = false;
+    } 
+   
+    if (dto.generateData) {
+      this.generateData();
+    }
+    
+    if (dto.meta) {
+      this.meta = dto.meta;
+    }
+    
+    this._persist();
+  } 
+ 
+  this.provider = providerFactory.getProvider(this.getType());
+}
+
+/**
+ * Template method to invoke to trigger the "execution" of the workef
+ * @method run
+ * @param {Boolean} start: optional. Set it to true to trigger a new execution. Defaults to false.
+ * @return {Object} a given result to be specified by sub-classes. Defaults to the JSON clone of the current instance. Can be empty.
+ */
+Worker.prototype.run = function(start) {
+	
+  // only run if asked to start or if already running
+  if (start || this.isRunning()) {
+    
+    if (start) {
+      
+      this.running = true;
+      this.stopped = false;
+    }
+    
+    // if the worker does not have a purpose of if the purpose can be reassigned while running
+    // ask the provider for a purpose
+    if (!this.getPurpose() || this.isReassignable()) {
+      this.setPurpose(this.provider.getPurpose(this));
+    }
+    
+    var done = this.work(); 
+    if (done) {
+      this.stopWork();
+    }
+    
+    return JSON.parse(JSON.stringify(this));
+  }else {
+    
+    log.info(this.getType() + " " +  this.id  + " is not running");
+  	return {}; 
+  }
+};
+
+/**
+ * @method getPurpose
+ * @return {Object} purpose
+ */
+Worker.prototype.getPurpose = function() {
+  return this.purpose;
+};
+
+/**
+ * @method setPurpose
+ * @param {Object} purpose
+ */
+Worker.prototype.setPurpose = function(purpose) {
+  
+  if (!purpose) {
+    
+    throw {
+
+        errorCode: "Missing_Parameter",
+        errorDetail: this.prototype.constructor.name + ".setPurpose: purpose cannot be null"
+      }
+  }
+  
+  log.info(this.getType() + " " + this.id + " setting new purpose " + JSON.stringify(purpose));
+  this.purpose = purpose;
+  this.purposeAchieved = false;
+  log.info(this.getType() + ".setPurpose: " + this.id + " setting purpose to " +  JSON.stringify(purpose));
+  this._persist();
+};
+
+/**
+ * Generic method that contains code to execute when the worker is working towards reaching a "purpose"
+ * Should be overriden by children classes. 
+ * Whenever isConformable() is true, the overriding work() method should make sure to check that isConfirmed() is true
+ * @method work
+ * @return {Boolean} true if work is done, false otherwise
+ * @throw {Error}
+ */
+Worker.prototype.work = function() {
+  
+   if (!this.purpose) {
+    
+    throw {
+      
+      errorCode: "Invalid_State",
+      errorDetail: this.getType() + ".work: " + this.id + " can't start working because purpose is not defined. Please set pupose first."
+    };
+  }
+  
+  this.working = true;
+  this._persist();
+  var done = this.isPurposeAchieved() && this.isConfirmed(); 
+  return done;
+};
+
+/**
+ * Generic method that contains code to execute when the worker instance has reached its current "purpose"
+ * By default, all it does is to set "working" to false and "purpose" to null, so the next execution of run will 
+ * pick a new purpose (if the instance is not stopped in the meantime)
+ * Should be overriden by children classes to add clean-up code
+ * @method stopWork
+ */
+Worker.prototype.stopWork = function() {
+  
+  // don't call setters to avoid multiple invocations of _persist()
+  this.working = false;
+  this.purpose = null;
+  log.info(this.getType() + " " +  this.id  + " has reached its purpose and stopped working");
+  this._persist();
+};
+
+/**
+ * Generic method that contains code to execute when the worker instance should stop running, i.e.
+ * executing new purposes. Erases the document where the worker data was persisted
+ * Should be overriden by children classes to add clean-up code
+ * @method stop
+ */
+Worker.prototype.stopRun = function() {
+  
+  this.running = false;
+  this._delete();
+};
+
+/**
+ * Generic method that generates data for simulation purposes
+ * Should be overriden by children classes
+ * @method generateData
+ */
+Worker.prototype.generateData = function() {
+};
+
+/**
+ * Use this method whenever this worker is confirmable (isConfirmable() returns true)
+ * to confirm that the work is done after the purpose has been reached by the worker
+ * @method confirm
+ */
+Worker.prototype.confirm = function() {
+  
+  if (this.isConfirmable()) {
+    
+    this.confirmed = true;
+  	this._persist();
+  }
+};
+
+/**
+ * @method setPurposeAchieved
+ * @param {Boolean} achieved 
+ * @throw {Error}
+ */
+Worker.prototype.setPurposeAchieved = function(achieved) {
+  
+  if (typeof(achieved) != "boolean") {
+  
+    throw {
+      errorCode: "Invalid_Parameter",
+      errorDetail: this.getType + "," + this.id + ".setPurposeIsAchieved: parameter should be of type boolean"
+    };
+  }
+
+  this.purposeAchieved = achieved;
+  this._persist();
+};
+
+/**
+ * @method isRunning
+ * return {Boolean}
+ */
+Worker.prototype.isRunning = function() {
+  return this.running;
+};
+
+/**
+ * @method isWorking
+ * return {Boolean}
+ */
+Worker.prototype.isWorking = function() {
+  return this.working;
+};
+
+/**
+ * @method isPurposeAchieved
+ * return {Boolean}
+ */
+Worker.prototype.isPurposeAchieved = function() {
+  return this.purposeAchieved;
+};
+
+/**
+ * @method isReassignable
+ * return {Boolean}
+ */
+Worker.prototype.isReassignable = function() {
+  return this.reassignable;
+};
+
+/**
+ * @method isConfirmable
+ * return {Boolean}
+ */
+Worker.prototype.isConfirmable = function() {
+  return this.confirmable;
+};
+
+/**
+ * @method isConfirmed
+ * return {Boolean}
+ */
+Worker.prototype.isConfirmed = function() {
+  
+  if (this.isConfirmable()) {
+    return this.confirmed;
+  }else {
+    return true;
+  }
+};
+
+/**
+ * Persist the current instance data as a JSON object in a document
+ * @method _persist
+ */
+Worker.prototype._persist = function() {
+  
+  var jsonClone = {};
+  for (var prop in this) {
+    
+    if (typeof(this[prop]) != "function") {
+      
+      if (typeof(this[prop]) != "string") {
+         jsonClone[prop] = JSON.stringify(this[prop]); 
+      }else {
+        jsonClone[prop] = this[prop];
+      }     
+    }
+  }  
+
+  if (this.meta) {
+    jsonClone["meta.types"]= this.meta;
+  }
+  delete jsonClone.provider; // remove the data pertaining to the provider
+  jsonClone.key =  this._getDocumentKey() // define the document's key
+  
+  // add metadata about the script and class
+  jsonClone.module = this.getModule();
+  jsonClone.type = this.getType();
+  
+  log.info(this.getType() +"._persist: " + this.id + " saving " +  JSON.stringify(jsonClone));
+  var saveResult = documents.save(jsonClone);
+  if (saveResult.metadata.status == "failure") {
+    
+    throw {
+
+      errorCode: "Saving_Failed",
+      errorDetail: this.getType + "," + this.id + "._persist: could not save " + this.id  + ": " + JSON.stringify(saveResult.metadata)
+    };
+  }
+};
+
+/**
+ * Restore the worker's data from a document
+ */
+Worker.prototype._load = function() {
+  
+  var resp = documents.get(this._getDocumentKey());
+  log.info("_load: " + this.id + " loaded document " +  JSON.stringify(resp));
+  if (resp.metadata.status == "failure") {
+    
+    throw {
+      
+      errorCode: "Loading_Failed",
+      errorDetail: this.getType + "," + this.id + "._load: could not load: " + JSON.stringify(resp.metadata)
+    };
+  }
+  
+  var forget = ["key", "versionNumber", "latest", "scriptr", "lastModifiedDate", "lastModifiedBy", "creationDate", "meta.types", "creator", "rootkey"];
+  for (var prop in resp.result) {
+    
+    if (forget.indexOf(prop) == -1) {
+      
+      try {        
+        this[prop] = JSON.parse(resp.result[prop]);
+      }catch(exception){
+        this[prop] = resp.result[prop];
+      }      
+    }
+  }
+  
+  log.info(this.getType() + "._load: Worker " +  this.id  + ": " + JSON.stringify(this));
+};
+
+/**
+ * @method getType
+ * @return {String} the name of the constructor of the current class
+ */
+Worker.prototype.getType = function() {
+  return this.constructor.name;
+};
+
+/**
+ * This method returns the script where the subclass is defined. It should be overriden by all subclasses.
+ * It is used by the _persist() method to add metadata to the persisted data.
+ * @mthod getModule
+ * @return {String} the name of the script where the subclass is defined
+ */
+Worker.prototype.getModule = function() {
+  
+  throw {
+    
+    errorCode: "Not_Implemented",
+	errordetail: "getModule should be implemented by all subclasses and only return 'currentScript' (return currentScript;)"
+  }
+};
+
+/**
+ * @method _getDocumentKey
+ * @return {String} a document key
+ */
+Worker.prototype._getDocumentKey = function() {
+  return this.getType() + "_" +  this.id;
+};
+
+/**
+ * Delete the document where the worker's data is persisted
+ * @method _delete
+ */
+Worker.prototype._delete = function() {
+  
+  var deleteResult = documents.delete(this._getDocumentKey());
+  if (deleteResult.metadata.status == "failure") {
+    
+    throw {
+
+      errorCode: "Saving_Failed",
+      errorDetail: this.getType + "," + this.id + "._delete: could not delete " + this.id  + ": " + JSON.stringify(saveResult.metadata)
+    };
+  }
+}

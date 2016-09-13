@@ -1,0 +1,2 @@
+var parkingservicesimulator = require("/demandables/simulation/parkingsearch/parkingservicesimulator");
+return new parkingservicesimulator.ParkingServiceSimulator({forceNew:true});

@@ -1,0 +1,85 @@
+var dummyworker = require("/demandables/workers/dummyworker");
+var dummymobileworker = require("/demandables/workers/dummymobileworker");
+var servicefactory = require("../services/servicefactory");
+var parkingsimulator = require("../simulation/parkingsearch/parkingservicesimulator");
+var parkingprovider = require("../providers/parkingspotprovider");
+var workerManager = require("../workermanager");
+
+try {
+ 
+  /*
+   * Test dummyworker (testing worker)
+   */
+  
+  //var dummyWorker = new dummyworker.DummyWorker({processId:"123456789"});
+  //var dummyWorker = new dummyworker.DummyWorker({id:"2q5ft4yux6bkjdgy181i"});
+  //console.log("DummyWorker " +  JSON.stringify(dummyWorker));
+  //dummyWorker.run(true);
+  //dummyWorker.run();
+  
+  /*
+   * Test mobiledummyworker (testing mobileworker)
+   */
+ 
+  //var dummyMobileWorker = new dummymobileworker.DummyMobileWorker({processId:"123456789", currentLocation:"33.856889,35.568928"});
+  var dummyMobileWorker = new dummymobileworker.DummyMobileWorker({id:"6si3rtlcvmv8mapcybvy"}); 
+  dummyMobileWorker.setCurrentLocation("33.853814,35.579901");
+  dummyMobileWorker.setPurposeAchieved(false);
+  console.log("DummyMobileWorker " +  JSON.stringify(dummyMobileWorker));
+  dummyMobileWorker.run(true);
+  //make the mobile worker move 
+  var points = ["33.853814,35.579901", "33.861315,35.595486", "33.869095,35.605139", "33.869610,35.607827", "33.869612,35.607833"];
+  
+  // should achieve purpose at the end of the loop
+  for (var i = 0; i < points.length; i++) {
+    
+    dummyMobileWorker.setCurrentLocation(points[i]);
+    dummyMobileWorker.run();
+    console.log(JSON.stringify(dummyMobileWorker));
+    console.log("Purpose achieved " +  dummyMobileWorker.isPurposeAchieved());
+  }
+  
+  // invoking run() once again should set a new purpose (in our case, the same one)
+  //dummyMobileWorker.setCurrentLocation("33.853814,35.579901");
+  //dummyMobileWorker.run();
+  //console.log(JSON.stringify(dummyMobileWorker));
+  
+  /*
+   * Test default direction service
+   */
+  //var directionService = servicefactory.getDirectionService();
+  //return directionService.getRoute("33.858128,35.568124", "33.853804,35.5732836");
+  
+  /*
+   * test parkingservicesimulator
+   */
+  //var parkingServiceSimulator = new parkingsimulator.ParkingServiceSimulator();
+  //console.log(JSON.stringify(parkingServiceSimulator));
+  //var spotArray = parkingServiceSimulator.listParkingSpots();
+  //console.log(JSON.stringify(spotArray));
+  //parkingServiceSimulator.setParkingSpotAvailability("p1", false);
+  //console.log(JSON.stringify(spotArray));
+  //parkingServiceSimulator.clear();
+  //console.log("CLEARED " + JSON.stringify(parkingServiceSimulator));
+  
+  /*
+   * test parkingserviceproviders
+   */
+  var parkingProvider = new parkingprovider.ParkingSpotProvider();
+  var dummyMobileWorker = new dummymobileworker.DummyMobileWorker({id:"6si3rtlcvmv8mapcybvy"}); 
+  dummyMobileWorker.setCurrentLocation("40.6757613,-73.9853766");
+  var purpose = parkingProvider.getPurpose(dummyMobileWorker);
+  console.log("Selected parking spot " + JSON.stringify(purpose));
+  
+  /*
+   * test workerManager
+   */
+  //var worker = workerManager.getWorker("d6jj0jnpbj6piftfknxf");
+  //console.log(JSON.stringify(worker));
+  
+  //var workerList = workerManager.listWorkersData({processId:"123456789", resultsPerPage:"10"});
+  //console.log(JSON.stringify(workerList));
+  
+}catch(exception){
+  throw JSON.stringify(exception);
+}

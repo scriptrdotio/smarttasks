@@ -1,0 +1,22 @@
+/**
+ * Provides next purpose to a given worker. This class can be subclassed.
+ * It is a simple implementation of the Vistor design pattern.
+ * @class Provider
+ * @constructor
+ */
+function Provider() {
+
+}
+
+/**
+ * Override this method. Any overriding code should end by the invocation of worker.setPurpose(purpose)
+ * A purpose is the nex task that a worker should handlde. 
+ * For example, in the case of a MobileWorker, the task should contain a targetLocation ("lat,lon")
+ * and optionnally the route to that target location (array of points) obtained from a destination service
+ * @method getPurpose
+ * @param {Object} worker: optional. The worker instance to set a purpose to. When provided, ca be used by the method
+ * to obtain specific data from the workfer instance
+ * @param {Object} params: optional. Any other parameter the provider might be interested in, mainly to customize its behavior
+ */
+Provider.prototype.getPurpose = function(worker){
+}; 

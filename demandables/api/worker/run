@@ -1,0 +1,40 @@
+var workerFactory = require("/demandables/workermanager");
+
+/**
+ * API to start and run a worker
+ * @module run
+ * @param {String} id: the identifier of the worker
+ * @param {String} start: optional, if true, instruct to start the worker (first run). Defaults to false
+ */
+
+var id = request.parameters.id;
+var start = request.parameters.start;
+
+try {
+  
+  if (!id) {
+    
+    throw {
+      errorCode: "Missing_parameter",
+      errorDetail: "demandables/run: id cannot be null or empty"
+    }
+  }
+  
+  var worker = workerFactory.getWorker(id);
+  var data = worker.run(start ? start : false);  
+  delete data.provider;
+  return data;
+}catch(exception) {  
+ 
+  if (exception.errorCode){
+  	return exception;  
+  }else {
+    
+    return {
+      
+      errorCode: "Error",
+      errorDetail: exception
+    };
+  }
+}
+

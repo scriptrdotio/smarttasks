@@ -1,0 +1,25 @@
+var mobileworkerModule = require("../mobileworker");
+
+/**
+ * This is a sample implementation of a mobile worker
+ * @class DummyMobileWorker
+ * @extends Worker
+ */
+function DummyMobileWorker(dto) { 
+  mobileworkerModule.MobileWorker.call(this, dto);
+}
+
+DummyMobileWorker.prototype = new mobileworkerModule.MobileWorker({inherits:true});
+DummyMobileWorker.prototype.constructor = DummyMobileWorker;
+
+DummyMobileWorker.prototype.work = function() {
+   return mobileworkerModule.MobileWorker.prototype.work.call(this); // never forget to return !
+};
+
+/**
+ * Must be implemented identically by all subclasses
+ * @method getModule
+ */
+DummyMobileWorker.prototype.getModule = function() {
+  return currentScript;
+};

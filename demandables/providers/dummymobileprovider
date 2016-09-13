@@ -1,0 +1,18 @@
+var provider = require("../provider");
+
+/**
+ * @class DummyMobileProvider
+ * @extends Provider
+ */
+function DummyMobileProvider(){
+  provider.Provider.call(this);
+}
+
+DummyMobileProvider.prototype = new provider.Provider();
+DummyMobileProvider.prototype.constructor = DummyMobileProvider;
+
+DummyMobileProvider.prototype.getPurpose = function(worker){  
+  return {
+   targetLocation: "33.869612,35.607833" 
+  }
+}

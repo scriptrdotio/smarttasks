@@ -1,0 +1,55 @@
+/**
+ * Configuration script, notably used for dependency injection (workers - providers - services). 
+ * Factories rely on the content of the config script but you can of course bypass configuration whenever needed
+ */
+
+/**
+ * Configuration of the services
+ * Associate a service type to a module path, a class name and a configuration to use
+ */
+var services = {
+  
+  "directionservice": { // directionservice is a service type, this section specifies what implementation to use and how to configure it
+     
+    module: "/demandables/services/directionservice/googlemaps", // the path to the script that contains the service implementation code
+    clazz: "GoogleMapsDirectionService", // the name of the class the implements the service
+    configuration: { // the configuration required by GoogleMapDirectionService
+       
+      url: "https://maps.googleapis.com/maps/api/directions/json",
+      key: "AIzaSyDhI2XkG5c4WTmWlGnZMAs6Y6_xp6YUfPU"
+    }
+  },
+  
+  "parkingservice": { // parkingservice is a service type, this section specifies what implementation to use and how to configure it
+    
+    module: "/demandables/simulation/parkingsearch/parkingservicesimulator",
+    clazz: "ParkingServiceSimulator",
+    configuration: {}
+  }
+};
+
+/**
+ * Configuration of the providers.
+ * Associate a worker type (class name) to it's corresponding provider
+ */
+var providers = {
+  
+  "DummyWorker": {
+    
+    module: "/demandables/providers/dummyprovider",
+    clazz: "DummyProvider"
+  },
+  
+  "DummyMobileWorker": {
+    
+    module: "/demandables/providers/dummymobileprovider",
+    clazz: "DummyMobileProvider"
+  },
+  
+  "ParkingSpotSeeker": {
+    
+     module: "/demandables/providers/parkingspotprovider",
+    clazz: "ParkingSpotProvider"
+  }
+};
+

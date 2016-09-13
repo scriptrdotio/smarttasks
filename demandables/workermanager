@@ -1,0 +1,168 @@
+var documents = require("document");
+
+/**
+ * Controller that creates instances of workers and subclasses using their persisted data
+ */
+
+/**
+ * Generic method to create a new instance of worker or any of its subclasses
+ * @param {String} processId: the identifier of the process the worker instance belongs to
+ * @param {String} module: the path to the script that contains the definition of the worker class to use
+ * @param {String} type: the name of the class to use
+ * @params {Object} params: optional, any additional parameters exepcted by the class
+ * @return {Object} instance of Worker or any of its subclasses
+ */
+function createWorker(processId, module, type, params) {
+  
+  if (!processId || !module || !type) {
+    
+    throw {
+      errorCode: "Missing_parameter",
+      errorDetail: "workerFactory.createWorker: processId, module and type cannot be null or empty"
+    }
+  }
+  
+  var dto = {
+    processId: processId
+  }
+  
+  if (params) {
+    
+    for (var key in params) {
+      dto[key] = params[key];
+    }
+  }
+  
+  var workerModule = require(module);
+  var workerInstance = new workerModule[type](dto);
+  return workerInstance;
+}
+
+/**
+ * Generioc method to get an instance of a Worker (or subclass) based on its persisted data
+ * @param {String} id: the id of the worker instance
+ * @return {Object} instance of Worker or any of its subclasses
+ */
+function getWorker(id) {
+  
+  if (!id) {
+    
+    throw {
+      errorCode: "Missing_parameter",
+      errorDetail: "workerFactory.getWorker: id cannot be null or empty"
+    }
+  }
+  
+  var document = _loadDocument(id); 
+  try {
+  
+    var workerModule = require("/" + document.module);
+  	var workerInstance = new workerModule[document.type]({id:id});
+  	return workerInstance;
+  }catch(exception) {
+    
+    throw {
+      
+      errorCode: "Class_Initialize_Exception",
+      errorDetail: "Could not load and instanciate worker. " + JSON.stringify(exception)
+    };
+  }
+}
+
+/**
+ * List all persisted worker instances of a given process
+ * @method listWorkersData
+ * @paran {Object} [dto] 
+ * @param {String} [dto.processId]: the identifier of the process
+ * @param {Number} [dto.resultsPerPage]: optional, determines the number of results per page (defaults to 50)
+ * @param {Number} [dto.pageNumber]: optional, the index of the page to be returned (defaults to 1)
+ * @param {Boolean} [dto.count]: optional, if true, instructs to return the total number of workers found (defaults to false)
+ * @return {Array} of JSON data pertaining to corresponding worker instances
+ */
+function listWorkersData(dto) {
+  
+  if (!dto.processId) {
+    
+    throw {
+      errorCode: "Missing_parameter",
+      errorDetail: "workerFactory.listWorkers: processId cannot be null or empty"
+    }
+  }
+  
+  var queryParams = {"query":'processId="' + dto.processId + '"', "fields":"*"};
+  if (dto.resultsPerPage) {
+    queryParams.resultsPerPage = "" + dto.resultsPerPage;
+  }
+  
+  if (dto.pageNumber) {
+    queryParams.pageNumber = "" + dto.pageNumber;
+  }
+  
+  if (dto.count) {
+    queryParams.count = dto.count;
+  }
+  
+  var resp = documents.query(queryParams);
+  if (resp.metadata.status == "failure") {
+    
+    throw {
+      
+      errorCode: "Loading_Failed",
+      errorDetail: "workerFactory._loadDocument : could not load " + dto.processId  + ": " + JSON.stringify(resp.metadata)
+    };
+  }
+  
+  var docs = resp.result.documents;
+  var list = [];
+  var forget = ["key", "versionNumber", "latest", "scriptr", "lastModifiedDate", "lastModifiedBy", "creationDate", "meta.types", "creator", "rootkey"];
+  for (var i = 0; i < docs.length; i++) {
+    
+    var doc = {};
+	for (var prop in docs[i]) {   
+    
+      if (forget.indexOf(prop) == -1) {
+
+        try {        
+          doc[prop] = JSON.parse(docs[i][prop]);
+        }catch(exception){
+          doc[prop] = docs[i][prop];
+        }      
+      }
+    }
+    
+    list.push(doc);
+  }  
+  
+  return list;
+}
+
+/**
+ * Load a document containing worker data
+ * @function _loadDocument
+ * @param {String} id: the document key
+ * @return {Object} a document
+ * @throws {Error}
+ */
+function _loadDocument(id) {
+  
+  var resp = documents.query({"query":'id="' + id + '"', "fields":"*"});
+  if (resp.metadata.status == "failure") {
+    
+    throw {
+      
+      errorCode: "Loading_Failed",
+      errorDetail: "workerFactory._loadDocument : could not load " + id  + ": " + JSON.stringify(resp.metadata)
+    };
+  }
+  
+  if (resp.result.documents.length == 0) {
+    
+    throw {
+      
+      errorCode: "Loading_Failed",
+      errorDetail: "workerFactory._loadDocument : could not find " + id
+    };
+  }
+  
+  return resp.result.documents[0];
+}

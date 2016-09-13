@@ -1,0 +1,29 @@
+var config = require("/demandables/config");
+
+/**
+ * Service factory. Uses the content of the demandables/config script to instanciate the appropriate services
+ * @module servicefactory
+ */
+
+/**
+ * @function getService
+ * @param {String} serviceType: e.g. "directionservice"
+ * @return {Object} instance of a service. Services are usually defined in demandables/services
+ * @throws {Error}
+ */
+function getService(serviceType) {
+  
+  try {
+    
+    var directionServiceModule = require(config.services[serviceType].module);
+  	var clazz = directionServiceModule[config.services[serviceType].clazz];
+  	return new clazz({configuration:config.services[serviceType].configuration});
+  }catch(exception) {
+    
+     throw {
+    
+       errorCode: "Service_Not_Found",
+       errorDetail: "serviceFactory. Could not instanciate service for " + serviceType + ". " + JSON.stringify(exception)
+     };
+  }
+}

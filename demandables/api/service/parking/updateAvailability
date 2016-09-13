@@ -1,0 +1,29 @@
+var serviceFactory = require("/demandables/services/servicefactory");
+
+/**
+ * API to update the availability status of a given parking spot
+ * @module listSpots
+ * @param {String} id: spot id
+ * @param {Boolean} availability
+ */
+
+try {
+  
+  var id = request.parameters.id;
+  var availability = JSON.parse(request.parameters.availability);
+  
+  var parkingService = serviceFactory.getService("parkingservice");
+  return parkingService.setParkingSpotAvailability(id, availability);
+}catch(exception) {  
+  
+  if (exception.errorCode){
+  	return exception;  
+  }else {
+    
+    return {
+      
+      errorCode: "Error",
+      errorDetail: exception
+    };
+  }
+}

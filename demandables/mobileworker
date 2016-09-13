@@ -1,0 +1,79 @@
+var workerModule = require("./worker");
+var util = require("./util");
+
+// Log intialization
+var log = require("log"); log.setLevel("info");
+
+// Max radius in meter from location to consider the mobile worker reach its target location
+var RADIUS = 10;
+
+/**
+ * Concrete base class for any Worker that is in movement (e.g. truck, car). The default behavior of such worker when working
+ * is to move to the destination specified in their Purpose. One a purpose is achieved (working is done), the worker moves the next
+ * location specified by the new purpose set by its Provider. 
+ * @class MobileWorker
+ * @constructor
+ * @extends Worker
+ * @param {Object} [dto] // see Worker class for general dto properties
+ * @param {String} [dto.currentLocation] : optional, specifies the current location ("lat,lon") of the mobile worker
+ */
+function MobileWorker(dto) {
+  
+  if (dto && dto.inherits) {
+   
+    workerModule.Worker.call(this, dto);
+    return;
+  }
+  
+  dto = dto ? dto : {}; 
+  dto.meta = {"purpose":"text"}; // specify that purpose should be persisted as a text field
+  this.currentLocation = dto.currentLocation ? dto.currentLocation : "";
+  workerModule.Worker.call(this, dto);
+}
+
+MobileWorker.prototype = new workerModule.Worker({inherits:true});
+MobileWorker.prototype.constructor = MobileWorker;
+
+/**
+ * See inherited method Worker.work
+ * @method work
+ */
+MobileWorker.prototype.work = function() {
+ 
+  log.info("current " +  this.currentLocation + ",target " + this.purpose.targetLocation);
+  var whereNow = util.toPoint(this.currentLocation); 
+  var whereTo = util.toPoint(this.purpose.targetLocation);
+  if (util.isPointInCircle(whereNow, whereTo, RADIUS)) {
+    
+    log.info(this.id  + ": purpose achieved - " + this.purpose.targetLocation);
+    this.setPurposeAchieved(true);
+  }
+  
+  return workerModule.Worker.prototype.work.call(this); 
+};
+
+/**
+ * @method setCurrentLocation
+ * @param {String} location: "lat,long"
+ */
+MobileWorker.prototype.setCurrentLocation = function(location) {
+
+  this.currentLocation = location;
+  this._persist();
+};
+
+/**
+ * @method getCurrentLocation
+ * @return {String} "lat,long"
+ */
+MobileWorker.prototype.getCurrentLocation = function(location) {
+  return this.currentLocation;
+};
+
+/**
+ * Must be implemented identically by all subclasses
+ * @method getModule
+ */
+MobileWorker.prototype.getModule = function() {
+  return currentScript;
+};

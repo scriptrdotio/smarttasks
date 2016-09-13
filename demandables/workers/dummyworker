@@ -1,0 +1,38 @@
+var workerModule = require("../worker");
+
+/**
+ * This is a sample implementation of a worker
+ * @class DummyWorker
+ * @extends Worker
+ */
+function DummyWorker(dto) {  
+  
+  this.currentCount = 0;
+  workerModule.Worker.call(this, dto);
+}
+
+DummyWorker.prototype = new workerModule.Worker({inherits:true});
+DummyWorker.prototype.constructor = DummyWorker;
+
+DummyWorker.prototype.work = function() {
+   
+  if (this.purpose.countTo <= this.currentCount) {
+    
+    console.log("Purpose achieved - " + this.purpose.countTo);
+    this.purposeIsAchieved();  
+  }else{
+    
+    this.currentCount = (Number(this.currentCount)) + 1;
+    console.log("Counting to " + this.purpose.countTo);
+  }  
+  
+  return workerModule.Worker.prototype.work.call(this);
+};
+
+/**
+ * Must be implemented identically by all subclasses
+ * @method getModule
+ */
+DummyWorker.prototype.getModule = function() {
+  return currentScript;
+};

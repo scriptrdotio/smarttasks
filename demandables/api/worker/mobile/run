@@ -1,0 +1,42 @@
+var workerFactory = require("/demandables/workermanager");
+
+/**
+ * API to start and run a mobile worker
+ * @module mobile/run
+ * @param {String} id: the identifier of the worker
+ * @param {String} start: optional, if true, instruct to start the worker (first run). Defaults to false
+ * @param {String} location: "lat,lon" current location of the mobile worker
+ */
+
+var id = request.parameters.id;
+var start = request.parameters.start;
+var currentLocation = request.parameters.location;
+try {
+  
+  if (!id || !currentLocation) {
+    
+    throw {
+      errorCode: "Missing_parameter",
+      errorDetail: "demandables/mobile/run: id and location cannot be null or empty"
+    }
+  }
+  
+  var worker = workerFactory.getWorker(id);
+  worker.setCurrentLocation(currentLocation);
+  var data = worker.run(start ? start : false);  
+  delete data.provider;
+  return data;
+}catch(exception) {  
+ 
+  if (exception.errorCode){
+  	return exception;  
+  }else {
+    
+    return {
+      
+      errorCode: "Error",
+      errorDetail: exception
+    };
+  }
+}
+

@@ -1,0 +1,76 @@
+var provider = require("/demandables/provider");
+var serviceFactory = require("/demandables/services/servicefactory");
+var util = require("/demandables/util");
+
+var log = require("log"); log.setLevel("info");
+
+/**
+ * This class implements the behavior of a basic parking spot provider, i.e. it can be invoked by vehicles
+ * to find the parking spot that is closer to them and obtain the route to that parking spot. 
+ * "Reassignable" workers will obtain an updated parking spot location/route everytime their run() method is executed
+ * based on their current location
+ * @class ParkingSpotProvider
+ * @extends Provider
+ */
+function ParkingSpotProvider(dto) {  
+  
+  provider.Provider.call(this);
+  this.parkingService = serviceFactory.getService("parkingservice");
+  this.directionService = serviceFactory.getService("directionservice");
+}
+
+ParkingSpotProvider.prototype = new provider.Provider();
+ParkingSpotProvider.prototype.constructor = ParkingSpotProvider;
+
+/**
+ * Return the closer available parking spot to the worker and the route to that spot. 
+ * Distance is used, not traffic conditions.
+ * @method getPurpose
+ * @param {Object} mobileWorker: an instance of MobileWorker or any of its subclasses
+ * @param {Object} params: optional. Additional parameters needed to customize the method
+ * @return {Object} { 
+ *	{String}id: parkingId, 
+ *  {Number}latitude, 
+ *  {Number}longitude, 
+ *  {Boolean}available, 
+ *  {Object} route { {Number} duration: time to reach spot in seconds, {Array}points where point is {Array}(lat,long)}
+ */
+ParkingSpotProvider.prototype.getPurpose = function(mobileWorker, params) {
+  
+  var currentLocation = mobileWorker.getCurrentLocation();
+  var point = util.toPoint(currentLocation);
+  var spot = this._findParkingSpotCloserToLocation(point.latitude, point.longitude);
+  var route = this.directionService.getRoute(currentLocation, spot.latitude + "," + spot.longitude);
+  var purpose = {
+    
+  	id: spot.id,
+    targetLocation: spot.latitude + "," + spot.longitude,
+    route:route
+  }
+  
+  log.info("Purpose target location " +  JSON.stringify(purpose.targetLocation));
+  return purpose;
+};
+
+/**
+ * Find the spot with the shortest distance to the worker. Although this is not optimal (as it does not take into account
+ * traffic conditions and traffic directions), it is very fast to execute
+ * @method _findParkingSpotCloserToLocation
+ */
+ParkingSpotProvider.prototype._findParkingSpotCloserToLocation = function(lat, lon) {
+  
+  var spots = this.parkingService.listParkingSpots(lat + "," +  lon, 200);
+  var shortest = {};
+  var minDistance = 1000000000000000;
+  for (var i = 0; i < spots.length; i++) {
+    
+    var distanceToSpot = util.getDistanceFromLatLon(lat, lon, spots[i].latitude, spots[i].longitude);
+    if  (distanceToSpot < minDistance && spots[i].available) { 
+    log.info("Spot " + JSON.stringify(spots[i]));
+      minDistance = distanceToSpot;
+      shortest = spots[i]; 
+    }
+  }
+  
+  return shortest;
+};

@@ -1,0 +1,113 @@
+var baseparkingservice = require("/demandables/services/parkingservice/baseparkingservice");
+
+var spots = {
+	"p1":{id:"p1", latitude: 40.679319,longitude: -74.004157,available: generateStatus()},
+	"p2":{id:"p2", latitude: 40.679271,longitude: -74.004119,available: generateStatus()},
+	"p3":{id:"p3", latitude: 40.679232,longitude: -74.004079,available: generateStatus()},
+	"p4":{id:"p4", latitude: 40.676751,longitude: -74.002916,available: generateStatus()},
+	"p5":{id:"p5", latitude: 40.677174,longitude: -74.003720,available: generateStatus()},
+	"p6":{id:"p6", latitude: 40.677231,longitude: -74.003913,available: generateStatus()},
+	"p7":{id:"p7", latitude: 40.677772,longitude: -74.003275,available: generateStatus()},
+	"p8":{id:"p8", latitude: 40.682694,longitude: -74.005480,available: generateStatus()},
+	"p9":{id:"p9", latitude: 40.682548,longitude: -74.005383,available: generateStatus()},
+	"p10":{id:"p10", latitude: 40.682060,longitude: -74.005061,available: generateStatus()},
+	"p11":{id:"p11", latitude: 40.669012,longitude: -73.977107,available: generateStatus()},
+	"p12":{id:"p12", latitude: 40.669289,longitude: -73.977708,available: generateStatus()},
+	"p13":{id:"p13", latitude: 40.669684,longitude: -73.978475,available: generateStatus()},
+	"p14":{id:"p14", latitude: 40.669846,longitude: -73.978813,available: generateStatus()},
+	"p15":{id:"p15", latitude: 40.669846,longitude: -73.978813,available: generateStatus()},
+	"p16":{id:"p16", latitude: 40.669692,longitude: -73.978717,available: generateStatus()},
+	"p17":{id:"p17", latitude: 40.669163,longitude: -73.979189,available: generateStatus()},
+	"p18":{id:"p18", latitude: 40.669004,longitude: -73.978813,available: generateStatus()},
+	"p19":{id:"p19", latitude: 40.668780,longitude: -73.978432,available: generateStatus()},
+	"p20":{id:"p20", latitude: 40.668605,longitude: -73.978019,available: generateStatus()}
+};
+
+log = require("log");
+log.setLevel("info"); 
+
+/**
+ * Basic stub to simulate a ParkingService
+ * @class ParkingServiceSimlator
+ */
+function ParkingServiceSimulator(config) {
+  
+  if (config.forceNew || !storage.global.parkingservice){
+    log.info("NEW PK " +  JSON.stringify(config.forceNew));
+    storage.global.parkingservice = {};
+    this.spots = spots;
+    this._persist();
+  }else { log.info("LOADING");
+    this._load();
+  }
+}
+
+ParkingServiceSimulator.prototype = new baseparkingservice.ParkingService({inherits:true});
+ParkingServiceSimulator.prototype.constructor = ParkingServiceSimulator;
+
+/**
+ * @method listParkingSpots
+ */
+ParkingServiceSimulator.prototype.listParkingSpots = function(center, radius, params) {
+  
+  var c = center ? center : "1.1111,2.2222";
+  var r = radius ? radius : 10;
+  baseparkingservice.ParkingService.prototype.listParkingSpots.call(this, c, r, params);
+  var spotArray = [];
+  for (var spot in this.spots){
+    spotArray.push(this.spots[spot]);
+  }
+  
+  return spotArray;
+};
+
+/**
+ * @method setParkingSpotAvailability
+ * @param {String} parkingId
+ * @param {Boolean} available: true if available, false otherwise
+ */
+ParkingServiceSimulator.prototype.setParkingSpotAvailability = function(parkingId, available) {
+ 
+  baseparkingservice.ParkingService.prototype.setParkingSpotAvailability.call(this, parkingId, available);
+  
+  if (this.spots[parkingId]) {
+    log.info("Changing parking " + parkingId + " availability to " + available);
+    this.spots[parkingId].available = available;
+    this._persist();
+  }
+};
+
+/**
+ * @method _persist
+ */
+ParkingServiceSimulator.prototype._persist = function() {  
+  storage.global.parkingservice = JSON.stringify(this);
+};
+
+/**
+ * @method _load
+ */
+ParkingServiceSimulator.prototype._load = function() {
+  
+  var myData = JSON.parse(storage.global.parkingservice);
+  for (var prop in myData){
+    this[prop] = myData[prop];
+  }
+};
+
+/**
+ * Remove data from storage
+ * @method clear
+ */
+ParkingServiceSimulator.prototype.clear = function() {  
+  
+  this.spots = {};
+  storage.global.parkingservice = {};
+};
+
+/**
+ * @function generateStatus
+ */
+function generateStatus() {  
+  return Math.round(Math.random() * 3) == 2 ? true : false;
+};

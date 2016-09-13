@@ -1,0 +1,44 @@
+var workerManager = require("/demandables/workermanager");
+
+/**
+ * API to create new worker instances in the back-end
+ * @module create
+ * @param {String} processId: the identifier of the process the worker instance belongs to
+ * @param {String} module: the path to the script that contains the definition of the worker class to use
+ * @param {String} type: the name of the class to use
+ * @param {Number} number: the number of worker instances to create. Optional, defaults to one
+ * // more parameters can be sent depending on the targeted class
+ * @return {Object} worker data
+ */
+
+try {
+ 
+  var processId = request.parameters.processId;
+  var module = request.parameters.module;
+  var type = request.parameters.type;
+  var params = request.parameters.params;
+  if (params) {
+    
+    delete params.module;
+  	delete params.type;
+    delete params.processId;
+    params = JSON.parse(params);
+  }
+  
+  var worker = workerManager.createWorker(processId, module, type, params);
+  var data = JSON.parse(JSON.stringify(worker));
+  delete data.provider;
+  return data;
+}catch(exception){
+  
+  if (exception.errorCode){
+  	return exception;  
+  }else {
+    
+    return {
+      
+      errorCode: "Error",
+      errorDetail: exception
+    };
+  }  
+}

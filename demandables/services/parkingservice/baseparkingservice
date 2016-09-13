@@ -1,0 +1,83 @@
+/**
+ * Abstract class to define the interface of a ParkingService
+ * @class ParkingService
+ * @constructor
+ * @param {Object} [dto]
+ * @param {Boolean} [dto.inherits] : optional, only used for inheritence. Must be set to true in that case.
+ * @param {Object} [dto.configuration]: configuration object. Mandatory when creating an instance of the service
+ */
+function ParkingService(dto) {
+  
+  if (dto && dto.inherits){
+    return;
+  }
+  
+  if (!dto || !dto.configuration) {
+    
+     throw {
+
+        errorCode: "Missing_Parameter",
+        errorDetail: this.getType() + " dto and dto.configuration cannot be null or empty"
+      };
+  }
+  
+  for (var prop in dto.configuration){
+    this[prop] = dto.configuration[prop];
+  }
+}
+
+/**
+ * Abstract method to obtain the list of parkings within a given circular area.
+ * This method should be overriden by children classes that need to define the actual algorithm.
+ * @metod listParkingSpots
+ * @param {String} center: lat,long
+ * @param {Number} radius: the distance to the point, in meters
+ * @param {Objects} params: additional specific parameters (optional)
+ * @eturn {Array} array of {(String)id, (Number)latitude, (Number)longitude, {Boolean)available}
+ */
+ParkingService.prototype.listParkingSpots = function(center, radius, params) {
+  
+  if (!center || !radius) {
+    
+     throw {
+
+        errorCode: "Missing_Parameter",
+        errorDetail: this.getType() + ".listParkingSpots(): center and radius cannot be null or empty"
+      }
+  }
+};
+
+/**
+ * @method getType
+ * @return {String} the name of the constructor of the current class
+ */
+ParkingService.prototype.getType = function() {
+  return this.constructor.name;
+};
+
+/**
+ * Abstract method that allows changing the availability status of a parking spot
+ * This method should be overriden by children classes
+ * @metod listParkingSpots
+ * @param {String} id: the parking spot id
+ * @param {Boolean} availability
+ */
+ParkingService.prototype.setParkingSpotAvailability = function(id, availability) {
+  
+  if (!id || availability == null || availability == undefined) {
+    
+     throw {
+
+       errorCode: "Missing_Parameter",
+       errorDetail: this.getType() + ".setParkingSpotAvailability(): id and availability cannot be null or empty"
+     };
+  }
+};
+
+/**
+ * @method getType
+ * @return {String} the name of the constructor of the current class
+ */
+ParkingService.prototype.getType = function() {
+  return this.constructor.name;
+};

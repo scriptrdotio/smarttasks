@@ -1,0 +1,58 @@
+/**
+ * Abstract class to define the interface of a DirectionService
+ * @class DirectionService
+ * @constructor
+ * @param {Object} [dto]
+ * @param {Boolean} [dto.inherits] : optional, only used for inheritence. Must be set to true in that case.
+ * @param {Object} [dto.configuration]: configuration object. Mandatory when creating an instance of the service
+ */
+function DirectionService(dto) {
+  
+  if (dto && dto.inherits){
+    return;
+  }
+  
+  if (!dto || !dto.configuration) {
+    
+     throw {
+
+        errorCode: "Missing_Parameter",
+        errorDetail: this.getType() + " dto and dto.configuration cannot be null or empty"
+      }
+  }
+  
+  for (var prop in dto.configuration){
+    this[prop] = dto.configuration[prop];
+  }
+}
+
+/**
+ * Abstract method to obtain the route to a given destination, in points. Should be overriden by sub-classes
+ * that need to define the actual algorithm.
+ * @metod getRoute
+ * @param {String} origin: lat,long
+ * @param {String} destination: lat,long
+ * @param {Objects} params: additional specific parameters (optional)
+ * @eturn {Object} 
+ *	{Numeric} duration: total route duration, 
+ *	{Array} points: array of coordinates (lat, long) that are part of the route from origin to destination
+ */
+DirectionService.prototype.getRoute = function(origin, destination, params) {
+  
+  if (!origin || !destination) {
+    
+     throw {
+
+        errorCode: "Missing_Parameter",
+        errorDetail: this.getType() + ".getRoute(): orgin and destination cannot be null or empty"
+      }
+  }
+};
+
+/**
+ * @method getType
+ * @return {String} the name of the constructor of the current class
+ */
+DirectionService.prototype.getType = function() {
+  return this.constructor.name;
+};

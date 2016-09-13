@@ -1,0 +1,21 @@
+var provider = require("../provider");
+
+/**
+ * @class DummyProvider
+ * @extends Provider
+ */
+function DummyProvider(){
+  provider.Provider.call(this);
+}
+
+DummyProvider.prototype = new provider.Provider();
+DummyProvider.prototype.constructor = DummyProvider;
+
+DummyProvider.prototype.getPurpose = function(worker){  
+  
+  var purpose =  {
+    countTo: Math.round(Math.random() * 10) + 1
+  };
+  
+  return purpose;
+}

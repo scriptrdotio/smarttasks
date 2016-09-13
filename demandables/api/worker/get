@@ -1,0 +1,35 @@
+var workerFactory = require("/demandables/workermanager");
+
+/**
+ * API to get a worker
+ * @module get
+ * @param {String} id: the identifier of the worker
+ */
+
+var id = request.parameters.id;
+try {
+  
+  if (!id) {
+    
+    throw {
+      errorCode: "Missing_parameter",
+      errorDetail: "demandables/get: id cannot be null or empty"
+    }
+  }
+  
+  var worker = workerFactory.getWorker(id);  
+  var data = JSON.parse(JSON.stringify(worker));
+  return data;
+}catch(exception) {  
+  
+  if (exception.errorCode){
+  	return exception;  
+  }else {
+    
+    return {
+      
+      errorCode: "Error",
+      errorDetail: exception
+    };
+  }
+}

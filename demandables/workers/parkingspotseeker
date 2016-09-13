@@ -1,0 +1,34 @@
+var mobileworkerModule = require("../mobileworker");
+
+// Log intialization
+var log = require("log"); log.setLevel("info");
+
+/**
+ * Sample implementation
+ * The purpose of this worker is to find a parking spot. It is reassignable, i.e. if a parking spot
+ * that is closer to the current parking spot set as purpose, the new parking spot is set as a new purpose
+ * by the provider
+ * @class ParkingSpotSeeking
+ * @extends Worker
+ */
+function ParkingSpotSeeker(dto) {  
+log.info("DTO " + JSON.stringify(dto));
+  dto = dto ? dto : {};
+  dto.reassignable = true;
+  mobileworkerModule.MobileWorker.call(this, dto);
+}
+
+ParkingSpotSeeker.prototype = new mobileworkerModule.MobileWorker({inherits:true});
+ParkingSpotSeeker.prototype.constructor = ParkingSpotSeeker;
+
+ParkingSpotSeeker.prototype.work = function() {
+   return mobileworkerModule.MobileWorker.prototype.work.call(this); // never forget to return !
+};
+
+/**
+ * Must be implemented identically by all subclasses
+ * @method getModule
+ */
+ParkingSpotSeeker.prototype.getModule = function() {
+  return currentScript;
+};

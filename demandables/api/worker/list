@@ -1,0 +1,48 @@
+var workerFactory = require("/demandables/workermanager");
+
+/**
+ * API to list all workers of a given process
+ * @module list
+ * @param {String} processId: the identifier of the process
+ * @param {Number} resultsPerPage: optional, determines the number of results per page (defaults to 50)
+ * @param {Number} pageNumber: optional, the index of the page to be returned (defaults to 1)
+ * @param {Boolean} count: optional, if true, instructs to return the total number of workers found (defaults to false)
+ */
+
+var processId = request.parameters.processId;
+var resultsPerPage = request.parameters.resultsPerPage;
+var pageNumber = request.parameters.pageNumber;
+var count = request.parameters.count;
+
+try {
+  
+  if (!processId) {
+    
+    throw {
+      errorCode: "Missing_parameter",
+      errorDetail: "demandables/list: processId cannot be null or empty"
+    }
+  }
+  
+  var dto = {
+    
+    processId: processId,
+    resultsPerPage: resultsPerPage,
+    pageNumber: pageNumber,
+    count: count
+  };
+  
+  return JSON.stringify(workerFactory.listWorkersData(dto));  
+}catch(exception) {  
+ 
+  if (exception.errorCode){
+  	return exception;  
+  }else {
+    
+    return {
+      
+      errorCode: "Error",
+      errorDetail: exception
+    };
+  }
+}
