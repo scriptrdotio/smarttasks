@@ -88,7 +88,22 @@ var providers = {
 ```
 ### Using services
 As previously mentioned, services are scripts that provide utility features that are required for the fulfillment of a task or for specifying a task. For example, if the task is “head to parking spot”, the provider will add the best route to the spot to the task, which it obtains by using an instance of a sub-class of BaseDirectionService (abstract class).  Services are organized in sub-folders of the services folder, where every sub-folder defines a service type and the scripts it contains are either abstract implementations (interfaces) or concrete implementation of the service type. Since dependency injection is used here as well, service instances should preferably be obtained through the invocation of the getService(serviceType) method of the /demandables/services/serviceFactory. 
-
+```
+  __
+ |__|______
+ |services | 
+ |_________|
+       |   __
+       |  |__|______________
+       |__|directionservice |
+       |  |_________________|
+       |         |    ______________________
+       |         |___|                      |
+       |         |   | BaseDirectionService_|
+       |         |   |____________________|/ 
+       |   
+   
+```
 Specifying what implementation the framework should use for a given service type is done by updating the services section of the configuration file (/demandables/config). For every service type, you should specify the module (script) where the service is implemented, the name of the class that implements the service and provide a configuration object that contains any data required to operate the service (e.g. API Key). Understanding the content of the configuration object is the responsibility of the service implementation.
 ```
 "directionservice": {      
