@@ -6,7 +6,8 @@ This generic approach is derivable into multiple applications, such as:
 - Waste collection: every time a bin is collected, trucks needs to know the next bin to head to,
 - Searching for an empty parking spot: available parking spots can be seen as tasks assigned to vehicles, where tasks can be reallocated dynamically (a spot has been taken while the vehicle was heading to it or if a nearby spot has become available),
 - Delivering goods: trucks can deliver goods and get notified along the way of the next delivery to make. 
-Core model (/demandables)
+
+## Core model (/demandables)
 - Worker: an abstraction of any entity that needs to execute a task at some point in time
   - A Worker has a “purpose”, which is a task that is assigned to it at a given point in time,
   -	A Worker can be “reassignable”, which means that it is possible to modify its purpose at hand before the latter is reached,
