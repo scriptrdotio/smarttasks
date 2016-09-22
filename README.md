@@ -44,7 +44,7 @@ This generic approach is derivable into multiple applications, such as:
 ## Behavior
 
 ### Instantiating workers
-From back-end scripts, workers are instantiated further to the invocation of the createWorker() function of the workermanager script. Remote client application create a worker by invoking the demandables/api/worker/create API, which actually forwards the call and received parameters to the aforementioned function. Worker instances are persistent representation of workers. 
+From back-end scripts, workers are instantiated further to the invocation of the createWorker() function of the workermanager script. Remote client applications create a worker by invoking the demandables/api/worker/create API, which actually forwards the call and received parameters to the aforementioned function. Worker instances are persistent representation of workers. 
 
 ### Starting and running workers
 Once a worker instance is created, it can be started by invoking its run() method and setting its optional start parameter to true. Remote client applications should invoke the /demandables/api/worker/run API and send start=true as a parameter of the request.
@@ -122,7 +122,7 @@ It is possible to use the framework from server-side (scriptr.io) scripts. In th
 In many cases, however, the framework will be used by remote clients (e.g. web clients) and will therefore need to go through the APIs that are exposed by the framework. 
 
 ### Worker APIs
-APIs that allow the manipulation of workers are defined in /demandables/api/worker. This folder also contains one subfolder per worker sub-type (currently only mobileworker is available). This convention should be adopted for any new sub-type of worker or existing sub-type (e.g. assume we create a flyingworker type, this will lead to the creation of the /demandables/api/worker/mobileworker/flyingworker fodler). When necessary, scripts contained in sub-folders override the APIs of the same in the parent folder. For example, /demandables/api/worker/mobileworker/run overrides the run API defined in/demandables/api/worker and should therefore be used by remote client to run a mobileworker.
+APIs that allow the manipulation of workers are defined in /demandables/api/worker. This folder also contains one subfolder per worker sub-type (currently only mobileworker is available). This convention should be adopted for any new sub-type of worker or existing sub-type (e.g. assume we create a flyingworker type, this will lead to the creation of the /demandables/api/worker/mobileworker/flyingworker fodler). When necessary, scripts contained in sub-folders override the APIs of the same name in the parent folder. For example, /demandables/api/worker/mobileworker/run overrides the run API defined in/demandables/api/worker and should therefore be used by remote client to run a mobileworker.
 
 ### Service APIs
 Service APIs (root is demandables/api/service) adopts the same convention as used for worker APIs.
