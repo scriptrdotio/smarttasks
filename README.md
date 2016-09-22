@@ -121,10 +121,20 @@ It is possible to use the framework from server-side (scriptr.io) scripts. In th
 In many cases, however, the framework will be used by remote clients (e.g. web clients) and will therefore need to go through the APIs that are exposed by the framework. 
 
 ### Worker APIs
-APIs that allow the manipulation of workers are defined in /demandables/api/worker. This folder also contains one subfolder per worker sub-type (currently only mobileworker is available). This convention should be adopted for any new sub-type of worker or existing sub-type (e.g. flyingworker  /demandables/api/worker/mobileworker/flyingworker). When necessary, scripts contained in sub-folders override the APIs of the same in the parent folder. For example, /demandables/api/worker/mobileworker/run overrides the run API defined in/demandables/api/worker and should therefore be used by remote client to run a mobileworker.
+APIs that allow the manipulation of workers are defined in /demandables/api/worker. This folder also contains one subfolder per worker sub-type (currently only mobileworker is available). This convention should be adopted for any new sub-type of worker or existing sub-type (e.g. assume we create a flyingworker type, this will lead to the creation of the /demandables/api/worker/mobileworker/flyingworker fodler). When necessary, scripts contained in sub-folders override the APIs of the same in the parent folder. For example, /demandables/api/worker/mobileworker/run overrides the run API defined in/demandables/api/worker and should therefore be used by remote client to run a mobileworker.
 
 ### Service APIs
 Service APIs (root is demandables/api/service) adopts the same convention as used for worker APIs.
 
 ## Extending the framework
-Service specifications should remain as generic as possible in order to provide the possibility to introduce new implementations without impacting the users of a service. For example, we provide a default implementation of directionservice through the googlemaps script. Developers should be able to seamlessly replace the latter with another implementation. 
+Extending the framework, i.e. adding new types should be done by extending the code model or any exiting sub-types, overriding existing method when necessary (when doing that, it is strongly recommended to invoke the parent method). 
+
+### Adding new worker types
+New worker types should either extend Worker or MobileWorker. In most cases, the only method to override will be work(). Associating the correct provider to instances of the new worker type should rely on dependency injection (leveraging the configuration file). It is recommended but not mandatory to put define new worker types in the worker folder or any of its sub-folders.
+
+### Adding new provider types
+New provider types should extend Provider or any of the existing sub-types. It is recommended but not mandatory to put define new provider types in the provider folder or any of its sub-folders.
+
+### Adding service types
+It is recommended to define service types in the /demandables/service folder where every service type has a folder of its own (e.g. /demandables/service /directionservice). The current design of the framework expects new service types to expose their interface (contract) in an abstract class that will be extended by concrete child classes. For example, the interface (contract) of the directionservice service type is defined in basedirectionservice and a default implementation if given by the googlemaps script. 
+
