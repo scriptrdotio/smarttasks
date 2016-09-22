@@ -22,7 +22,7 @@ var services = {
   
   "parkingservice": { // parkingservice is a service type, this section specifies what implementation to use and how to configure it
     
-    module: "/demandables/simulation/parkingsearch/parkingservicesimulator",
+    module: "/simulation/demandables/parkingsearch/parkingservicesimulator",
     clazz: "ParkingServiceSimulator",
     configuration: {}
   }

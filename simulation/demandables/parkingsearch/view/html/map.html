@@ -14,12 +14,12 @@
         height: 100%;
       }	 
     </style>
-    <script src="/simulation/demandables/util.js"></script>
-    <script src="/simulation/demandables/parkingsearch/view/lib/scriptrio.js"></script>
-    <script src="/simulation/demandables/parkingsearch/view/script/car.js"></script>
-    <script src="/simulation/demandables/parkingsearch/view/script/simulator.js"></script>
-    <script src="/simulation/demandables/parkingsearch/view/script/parkingspot.js"></script>
-    <script src="/simulation/demandables/parkingsearch/view/script/parkingspotmanager.js"></script>
+    <script src="https://parkingfinder.scriptrapps.io/simulation/demandables/util.js"></script>
+    <script src="https://parkingfinder.scriptrapps.io/simulation/demandables/parkingsearch/view/lib/scriptrio.js"></script>
+    <script src="https://parkingfinder.scriptrapps.io/simulation/demandables/parkingsearch/view/script/car.js"></script>
+    <script src="https://parkingfinder.scriptrapps.io/simulation/demandables/parkingsearch/view/script/simulator.js"></script>
+    <script src="https://parkingfinder.scriptrapps.io/simulation/demandables/parkingsearch/view/script/parkingspot.js"></script>
+    <script src="https://parkingfinder.scriptrapps.io/simulation/demandables/parkingsearch/view/script/parkingspotmanager.js"></script>
 	<script>
       
       var map = null;
@@ -27,7 +27,7 @@
       var simulator = null; 
       function init() {
         
-        scriptrio = new Scriptr({url:"iotdemos.scriptrapps.io",token:"UzIyQTgwRjc2Ng=="});
+        scriptrio = new Scriptr({url:"parkingfinder.scriptrapps.io",token:"VDNFQjUzMEQ3NA=="});
         simulator = new Simulator({},  map, scriptrio);
         simulator.init();
       }

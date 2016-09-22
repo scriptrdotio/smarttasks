@@ -48,56 +48,67 @@ Car.prototype.run = function(start) {
     }
 
     var onSuccess = function(data) {
+	
+      try {
+        
+        if (data.purposeAchieved) {      
 
-      if (data.purposeAchieved) {      
+          self.purposeAchieved = true;
+          self.routeIndex = 0;
+          if (self.timer) {          
+            clearInterval(self.timer);
+          }
 
-        self.purposeAchieved = true;
-        self.routeIndex = 0;
-        if (self.timer) {          
-          clearInterval(self.timer);
-        }
+          self.spot.setTarget(false);
+          self.spot.setStatus(false);
+          console.log(self.id + " reached its target");
+        }else {
 
-        self.spot.setTarget(false);
-        self.spot.setStatus(false);
-      }else {
+          // if needed replace purpose 
+          var currentPurpose = self.getPurpose();
+          if (!currentPurpose || (currentPurpose.targetLocation != data.purpose.targetLocation)) {
 
-        // if needed replace purpose 
-        var currentPurpose = self.getPurpose();
-        if (!currentPurpose || (currentPurpose.targetLocation != data.purpose.targetLocation)) {
+              if (currentPurpose) {
+                console.log(self.id + " changing target from " + currentPurpose.id + 
+                            "(" + currentPurpose.targetLocation + ") to " + data.purpose.id + "(" + data.purpose.targetLocation + ")");
+              }
 
-            if (currentPurpose) {
-              console.log(self.id + " changing target from " + currentPurpose.id + 
-                          "(" + currentPurpose.targetLocation + ") to " + data.purpose.id + "(" + data.purpose.targetLocation + ")");
+              if (self.purpose) {
+                self.erasePurpose();
+              }
+
+              self.setPurpose(data.purpose);
+              self.drawPurpose();
+              currentPurpose = data.purpose;           
+              if (self.timer) {          
+                clearInterval(self.timer);
+              }
+
+              var speed = Math.round(data.purpose.route.duration / data.purpose.route.points.length) * 1000;
+              var minInterval = self.config && self.config.minInterval ? self.config.minInterval : MIN_INTERVAL;
+              speed = speed < MIN_INTERVAL ? MIN_INTERVAL : speed; 
+              self.timer = setInterval(
+                function() {
+                  self.run();}, speed);     
+          }
+
+          if (self.purpose) {
+           
+            // erase car from old position
+            self.erase();
+            // move to next point in route
+            if (self.routeIndex <  currentPurpose.route.points.length) {
+              self.routeIndex += 1;
             }
 
-            if (self.purpose) {
-              self.erasePurpose();
-            }
-
-            self.setPurpose(data.purpose);
-            self.drawPurpose();
-            currentPurpose = data.purpose;
-            self.routeIndex = 0;
-            if (self.timer) {          
-              clearInterval(self.timer);
-            }
-
-            var speed = Math.round(data.purpose.route.duration / data.purpose.route.points.length) * 1000;
-            var minInterval = self.config && self.config.minInterval ? self.config.minInterval : MIN_INTERVAL;
-            speed = speed < MIN_INTERVAL ? MIN_INTERVAL : speed; 
-            self.timer = setInterval(
-              function() {
-                self.run();}, speed);     
-        }
-
-        // erase car from old position
-        self.erase();
-        // move to next point in route
-        self.routeIndex += 1;
-        console.log(self.id + "," + ((self.spot) ? "moving to " + (self.spot.id) : "unassigned"));
-        self.setLocation(currentPurpose.route.points[self.routeIndex][0], currentPurpose.route.points[self.routeIndex][1]);
-        // draw car on new position 
-        self.draw();
+            console.log(self.id + "," + ((self.spot) ? "moving to " + (self.spot.id) : "unassigned"));
+            self.setLocation(currentPurpose.route.points[self.routeIndex][0], currentPurpose.route.points[self.routeIndex][1]);
+            // draw car on new position 
+            self.draw();
+          }  
+      	}
+      }catch(exception){
+        console.log(exception);
       }
     };
 
@@ -143,7 +154,9 @@ Car.prototype.getLocation = function() {
 };
 
 Car.prototype.setPurpose = function(purpose) {
+  
   this.purpose = purpose;
+  this.routeIndex = 0;
 };
 
 Car.prototype.getPurpose = function() {
@@ -159,7 +172,7 @@ Car.prototype.draw = function() {
     position: {lat:Number(coords[0]), lng: Number(coords[1])},
     map: this.map,
     icon: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-    title: "id:" +  this.id + ", heading to:" +  this.purpose.id + "(" + this.purpose.location + ")"
+    title: "id:" +  this.id + ", heading to:" +  this.purpose.id + "(" + this.purpose.targetLocation + ")"
   });
 };
 
@@ -173,7 +186,7 @@ Car.prototype.erase = function() {
 Car.prototype.drawPurpose = function() {
   
   var purpose = this.getPurpose();
-  if (!this.spot) {
+  if (!this.spot && purpose) {
     this.spot = this.parkingSpotManager.getParkingSpotByLocation(purpose.targetLocation);
   }
  

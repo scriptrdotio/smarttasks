@@ -10,23 +10,23 @@ var config = require("/demandables/config");
 
 /**
  * @function getProvider
- * @param {String} providerType: e.g. "/demandables/providers/mobileworkerprovider"
+ * @param {String} workerType: e.g. "/demandables/worker/mobileworker"
  * @return {Object} instance of a Provider sub-class
  * @throws {Error}
  */
-function getProvider(providerType) {
+function getProvider(workerType) {
   
   try {
     
-    var providerModule = require(config.providers[providerType].module);
-  	var clazz = providerModule[config.providers[providerType].clazz];
+    var providerModule = require(config.providers[workerType].module);
+  	var clazz = providerModule[config.providers[workerType].clazz];
   	return new clazz();
   }catch(exception) {
     
      throw {
     
        errorCode: "Provider_Not_Found",
-       errorDetail: "providerFactory. Could not instanciate provider for " + providerType + ". " + JSON.stringify(exception)
+       errorDetail: "providerFactory. Could not instanciate provider for " + workerType + ". " + JSON.stringify(exception)
      };
   }
 }

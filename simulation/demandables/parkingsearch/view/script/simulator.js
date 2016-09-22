@@ -1,6 +1,6 @@
 var util = "/demandables/util";
 
-var MAX_CARS = 2;
+var MAX_CARS = 5;
 var PROCESS_PREFIX = "demandables_";
 var SIM_CENTER = {lat: 40.683009, lon:-73.998143}; 
 var SIM_RADIUS = 400; // meters
@@ -22,7 +22,7 @@ Simulator.prototype.init = function(){
   
   var self = this;
   var xhr = new XMLHttpRequest();
-  xhr.open("POST", "https://iotdemos.scriptrapps.io/simulation/demandables/parkingsearch/api/createParkingSpots");
+  xhr.open("POST", "https://parkingfinder.scriptrapps.io/simulation/demandables/parkingsearch/api/createParkingSpots");
   xhr.onload = function() {
   	self.listParkingSpots();   
   }
