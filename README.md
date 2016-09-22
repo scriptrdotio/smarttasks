@@ -14,7 +14,7 @@ Core model (/demandables)
 -	Mobile worker: a sub-type of Worker that has a location that can change in time,
 -	Provider: a provider knows what task to assign to a given worker, based on any information it obtains from the latter (application of the Visitor design pattern), 
 - Service: providers can use services when determining the task to assign to a worker. For example, a provider can use a ParkingService to obtain the list of nearby available parking spots before it determines the nearest parking spot to a given vehicle (worker).
-
+```
 +-------------+
 |   Worker    |
 |-------------|
@@ -39,7 +39,7 @@ Core model (/demandables)
 |-------------|
 |             |
 +-------------+  
-
+```
 ## Behavior
 
 ### Instantiating workers
@@ -50,6 +50,7 @@ Once a worker instance is created, it can be started by invoking its run() metho
 Workers cannot be started more than once. When a worker is started, it starts working as long as its purpose is not reached. There is no automatic loop and thus, it is up to the client application to regularly invoke the run() method to make sure the worker “works”. The worker will however automatically check if its purpose has been reached and will stop working if it is the case (confirmable workers will also check if confirmation has been set before stopping). A worker stays in the running state (started) as long as it does not receive a specific instruction to stop (stopRun()). 
 
 Workers are generally responsible of knowing when they have reached their purpose and more generally of what needs to be done when “working”. Therefore, any descendants of the Worker or MobileWorker class can override the work() method. It is strongly recommended that any overriding implementation still invokes the work() method of its immediate parent as a last instruction, to make sure not to break the predefined behavior of the framework.
+```
   ___________                 _________________
  /           \               /                 \
 |     Not     |_run(true)__\|     Running       |
@@ -68,7 +69,7 @@ Workers are generally responsible of knowing when they have reached their purpos
                             |  |   Working    | |
                             |   \____________/  |
                             \___________________/
-
+```
 
 ### Disposing a worker
 It is possible to delete the document into which a given worker instance has persisted its data by invoking its _delete() method. Note that once this method is invoked, the Worker instance can still be used and persist its data, which would actually cancel the effect of the deletion. Therefore, it is recommended to stop using a worker whenever an explicit call to _delete() has been made.
