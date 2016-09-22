@@ -155,6 +155,16 @@ The map displays parking spots and cars. The cars will move in real-time at a sp
 - Once a vehicle reaches a spot the spots turns to red (unavailable)
 
 You can hover over parking spots and vehicles to see information about them. CTRL + Shift + I (F12) will allow you to display the console where you can see logs about what is happening:
+```
+27phw668qhcfgp7k1h4f,moving to p2
+7cefl3qk59ob7cs9rsoy,moving to p9
+3xnxt36ecijys60kv158,moving to p5
+27phw668qhcfgp7k1h4f,moving to p2
+izr1v34y0sunmty4uw2y,moving to p9
+27phw668qhcfgp7k1h4f changing target from p2(40.679271,-74.004119) to p9(40.682548,-74.005383)
+27phw668qhcfgp7k1h4f,moving to p9
+27phw668qhcfgp7k1h4f reached its target
+```
 
 ### Changing the number of cars
 Modify the value of the MAX_CARS variable in /simulation/demandables/parkingsearch/view/script/simulator.js
