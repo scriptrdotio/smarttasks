@@ -134,10 +134,13 @@ Extending the framework, i.e. adding new types should be done by extending the c
 New worker types should either extend Worker or MobileWorker. In most cases, the only method to override will be work(). Associating the correct provider to instances of the new worker type should rely on dependency injection (leveraging the configuration file). It is recommended but not mandatory to put define new worker types in the worker folder or any of its sub-folders.
 
 ### Adding new provider types
-New provider types should extend Provider or any of the existing sub-types. It is recommended but not mandatory to put define new provider types in the provider folder or any of its sub-folders.
+New provider types should extend Provider or any of the existing sub-types. It is recommended but not mandatory to define new provider types in the provider folder or any of its sub-folders.
 
 ### Adding service types
 It is recommended to define service types in the /demandables/service folder where every service type has a folder of its own (e.g. /demandables/service /directionservice). The current design of the framework expects new service types to expose their interface (contract) in an abstract class that will be extended by concrete child classes. For example, the interface (contract) of the directionservice service type is defined in basedirectionservice and a default implementation if given by the googlemaps script. 
+
+### Examples of extensions
+The /demandables/worker and demandables/provider folders respectively contain rudimentary examples of framework extensions: dummyaworker and its corresponding dummyprovider, dummymobileworker and dummymobileprovider. In addition. the /demandables/test/tests script contains examples on how to use the latter classes. These should hopefully give you a first understanding on how to add new sub-types.
 
 ## Sample application
 A sample application that is built on top of the framework is available in /simulation. When ran, the application shows cars seeking available parking spots. The cars will compete for the parking spots, which eventually leads to reassigning the vehicles that could not manage to park to another spot, until all cars are parked (if possible - might enter an infinite loop if there aren't enough free parking spots). Cars will also be dynamically oriented to different parking spots whenever a spot is considered to be closer to the car than the spot towards which the car is heading. Determining the most appropriate spot and the route towards it is done by the parkingspotprovider script, which is part of framework, and the latter takes care of allocating the next task (spot) to the cars. 
