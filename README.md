@@ -138,3 +138,28 @@ New provider types should extend Provider or any of the existing sub-types. It i
 ### Adding service types
 It is recommended to define service types in the /demandables/service folder where every service type has a folder of its own (e.g. /demandables/service /directionservice). The current design of the framework expects new service types to expose their interface (contract) in an abstract class that will be extended by concrete child classes. For example, the interface (contract) of the directionservice service type is defined in basedirectionservice and a default implementation if given by the googlemaps script. 
 
+## Sample application
+A sample application that is built on top of the framework is available in /simulation. When ran, the application shows cars seeking available parking spots. The cars will compete for the parking spots, which eventually leads to reassigning the vehicles that could not manage to park to another spot, until all cars are parked (if possible - might enter an infinite loop if there aren't enough free parking spots). Cars will also be dynamically oriented to different parking spots whenever a spot is considered to be closer to the car than the spot towards which the car is heading. Determining the most appropriate spot and the route towards it is done by the parkingspotprovider script, which is part of framework, and the latter takes care of allocating the next task (spot) to the cars. 
+
+### How to launch the application
+- Option 1: From the scriptr.io workspace, open simulation/demandables/parkingsearch/view/html/map.html then click on View.
+- Option 2: try the [online demo](https://parkingfinder.scriptrapps.io/simulation/demandables/parkingsearch/view/html/map.html 
+
+### What's in map.html
+The map displays parking spots and cars. The cars will move in real-time at a speed that is calculated according to the duration estimated by the direction service of the framework (goooglemaps) to reach the allocated parking spot.
+
+- Empty parking spots are in green
+- Used (unavailable) parking spots are in red
+- Vehicles seeking a parking spot are in yellow (it takes 2-3 seconds to display the vehicles after displaying the parking spots)
+- Parking spot allocated to a car are in blue (a same parking spot might allocated to more than one car). 
+- Once a vehicle reaches a spot the spots turns to red (unavailable)
+
+You can hover over parking spots and vehicles to see information about them. CTRL + Shift + I (F12) will allow you to display the console where you can see logs about what is happening:
+
+### Changing the number of cars
+Modify the value of the MAX_CARS variable in /simulation/demandables/parkingsearch/view/script/simulator.js
+
+### Notes
+- You might need to zoom in as spots are very close to each others (and sometimes cars as well)
+- The demandables framework uses craw flight distance to determine nearest spot (not best option but good for demo as forces dynamics reallocation of spots)
+Demandables framework uses google map wrapper  (service implementation provided with the framework)
