@@ -23,7 +23,7 @@ Core model (/demandables)
 |purpose      |               |  Provider  |              |   Service  |
 +-------------+_______________|------------|______________|------------|
 |run          |               |------------|              |            |
-|work         |               |gertPurpose |              +------------+ 
+|work         |               |getPurpose  |              +------------+ 
 |stopRun      |               |            |
 |stopWork     |               +------------+
 +-------------+
@@ -116,5 +116,15 @@ Specifying what implementation the framework should use for a given service type
     }
   },
 ```
+## APIs
+It is possible to use the framework from server-side (scriptr.io) scripts. In that case, scripts should obtain instances of workers using the corresponding  workerManager, then invoke any required method of the obtained instances. 
+In many cases, however, the framework will be used by remote clients (e.g. web clients) and will therefore need to go through the APIs that are exposed by the framework. 
+
+### Worker APIs
+APIs that allow the manipulation of workers are defined in /demandables/api/worker. This folder also contains one subfolder per worker sub-type (currently only mobileworker is available). This convention should be adopted for any new sub-type of worker or existing sub-type (e.g. flyingworker  /demandables/api/worker/mobileworker/flyingworker). When necessary, scripts contained in sub-folders override the APIs of the same in the parent folder. For example, /demandables/api/worker/mobileworker/run overrides the run API defined in/demandables/api/worker and should therefore be used by remote client to run a mobileworker.
+
+### Service APIs
+Service APIs (root is demandables/api/service) adopts the same convention as used for worker APIs.
+
 ## Extending the framework
 Service specifications should remain as generic as possible in order to provide the possibility to introduce new implementations without impacting the users of a service. For example, we provide a default implementation of directionservice through the googlemaps script. Developers should be able to seamlessly replace the latter with another implementation. 
