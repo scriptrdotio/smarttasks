@@ -16,7 +16,7 @@ var services = {
     configuration: { // the configuration required by GoogleMapDirectionService
        
       url: "https://maps.googleapis.com/maps/api/directions/json",
-      key: "AIzaSyDhI2XkG5c4WTmWlGnZMAs6Y6_xp6YUfPU"
+      key: "YOUR_GOOGLE_MAP_API_KEY"
     }
   },
   
