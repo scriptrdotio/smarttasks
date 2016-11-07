@@ -1,5 +1,0 @@
-/**
- * Simple test script that publishes min asset data to the channel to which the simplemap component is subscribed
- * Make sure to replace the values of the id, lat and lng parameters to something that suits your own scenario
- */
-publish("map", JSON.stringify([{id:"1244", lat:40.774116, lng: -74.005976}]));
