@@ -1,0 +1,145 @@
+/**
+ * Abstract class to define the interface of a WasteMgtService
+ * @class WasteMgtService
+ * @constructor
+ * @param {Object} [dto]
+ * @param {Boolean} [dto.inherits] : optional, only used for inheritence. Must be set to true in that case.
+ * @param {Object} [dto.configuration]: configuration object. Mandatory when creating an instance of the service
+ */
+function WasteMgtService(dto) {
+  
+  if (dto && dto.inherits){
+    return;
+  }
+  
+  if (!dto || !dto.configuration) {
+    
+     throw {
+
+        errorCode: "Missing_Parameter",
+        errorDetail: this.getType() + " dto and dto.configuration cannot be null or empty"
+      };
+  }
+  
+  for (var prop in dto.configuration){
+    this[prop] = dto.configuration[prop];
+  }
+}
+
+/**
+ * Set capacity to 100 and assigned to false
+ * @method reset
+ * @param {String} id: the bin id
+ */
+WasteMgtService.prototype.reset = function(id) {
+  
+  if (!id) {
+    
+     throw {
+
+       errorCode: "Missing_Parameter",
+       errorDetail: this.getType() + ".reset(): id cannot be null or empty"
+     };
+  }
+};
+
+/**
+ * Abstract method. Specify that a bin has been assigned to a worker and therefore, cannot be reassigned to another
+ * This method should be overriden by children classes
+ * @method assign
+ * @param {String} id: the bin id
+ */
+WasteMgtService.prototype.assignBin = function(id) {
+  
+   if (!id) {
+    
+     throw {
+
+       errorCode: "Missing_Parameter",
+       errorDetail: this.getType() + ".assignBin(): id cannot be null or empty"
+     };
+  }
+};
+
+/**
+ * Abstract method.. Specify that a bin is not assigned to any worker anymore
+ * This method should be overriden by children classes
+ * @method assign
+ * @param {String} id: the bin id
+ */
+WasteMgtService.prototype.unAssignBin = function(id) {
+  
+  if (!id) {
+    
+     throw {
+
+       errorCode: "Missing_Parameter",
+       errorDetail: this.getType() + ".unAssignBin(): id cannot be null or empty"
+     };
+  }
+};
+
+/**
+ * Abstract method to obtain the list of bins within a given circular area.
+ * This method should be overriden by children classes that need to define the actual algorithm.
+ * @metod listParkingSpots
+ * @param {String} center: lat,long
+ * @param {Number} radius: the distance to the point, in meters
+ * @param {Objects} params: additional specific parameters (optional)
+ * @eturn {Array} array of {(String)id, (Number)latitude, (Number)longitude, {Number)capacity}
+ */
+WasteMgtService.prototype.listBins = function(center, radius, params) {
+  
+  if (!center || !radius) {
+    
+     throw {
+
+        errorCode: "Missing_Parameter",
+        errorDetail: this.getType() + ".listBins(): center and radius cannot be null or empty"
+      }
+  }
+};
+
+/**
+ * Read the next bin in the list of bins, starting from index.
+ * @method getNextBin
+ * @param {Number} index
+ */
+WasteMgtService.prototype.getNextBin = function(index) {
+  
+   if (index == null || index == undefined) {
+    
+     throw {
+
+       errorCode: "Missing_Parameter",
+       errorDetail: this.getType() + ".getNextBin(): index cannot be null or empty"
+     };
+  }
+};
+
+/**
+ * Abstract method that allows changing the remaining capacity of a bin
+ * This method should be overriden by children classes
+ * @metod listParkingSpots
+ * @param {String} id: the bin id
+ * @param {float} capacity
+ */
+WasteMgtService.prototype.setBinCapacity = function(id, capacity) {
+  
+  if (!id || capacity == null || capacity == undefined) {
+    
+     throw {
+
+       errorCode: "Missing_Parameter",
+       errorDetail: this.getType() + ".setBinCapacity(): id and capacity cannot be null or empty"
+     };
+  }
+};
+
+/**
+ * @method getType
+ * @return {String} the name of the constructor of the current class
+ */
+WasteMgtService.prototype.getType = function() {
+  return this.constructor.name;
+};

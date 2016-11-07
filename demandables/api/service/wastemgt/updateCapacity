@@ -1,0 +1,29 @@
+var serviceFactory = require("/demandables/services/servicefactory");
+
+/**
+ * API to update the remaining capacity of a given parking waste
+ * @module udateCapacity
+ * @param {String} id: bin id
+ * @param {Number} capacity
+ */
+
+try {
+  
+  var id = request.parameters.id;
+  var capacity = JSON.parse(request.parameters.capacity);
+  
+  var wastmgtService = serviceFactory.getService("wastemgtservice");
+  return wastmgtService.setBinCapacity(id, capacity);
+}catch(exception) {  
+  
+  if (exception.errorCode){
+  	return exception;  
+  }else {
+    
+    return {
+      
+      errorCode: "Error",
+      errorDetail: exception
+    };
+  }
+}

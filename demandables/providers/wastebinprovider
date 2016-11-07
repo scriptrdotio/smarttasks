@@ -1,0 +1,105 @@
+var provider = require("/demandables/provider");
+var serviceFactory = require("/demandables/services/servicefactory");
+var util = require("/demandables/util");
+
+var log = require("log"); log.setLevel("info");
+var document = require("document");
+const MIN_CAPACITY = 8;
+
+/**
+ * This class implements the behavior of a basic waste bi provider, i.e. it can be invoked by trucks
+ * to find an empty bin that is closer to them and obtain the route to that bin. 
+ * "Reassignable" workers will obtain an updated waste bin location/route everytime their run() method is executed
+ * based on their current location
+ * @class WasteBinProvider
+ * @extends Provider
+ */
+function WasteBinProvider(dto) {  
+  
+  provider.Provider.call(this);
+  this.wastemgtservice = serviceFactory.getService("wastemgtservice");
+  this.directionService = serviceFactory.getService("directionservice");
+}
+
+WasteBinProvider.prototype = new provider.Provider();
+WasteBinProvider.prototype.constructor = WasteBinProvider;
+
+/**
+ * Return the closer available waste bin to the worker and the route to that bin. 
+ * Distance is used, not traffic conditions.
+ * @method getPurpose
+ * @param {Object} mobileWorker: an instance of MobileWorker or any of its subclasses
+ * @param {Object} params: optional. Additional parameters needed to customize the method
+ * @return {Object} { 
+ *	{String}id: binId, 
+ *  {Number}latitude, 
+ *  {Number}longitude, 
+ *  {Number}capacity, 
+ *  {Object} route { {Number} duration: time to reach bin in seconds, {Array}points where point is {Array}(lat,long)}
+ */
+WasteBinProvider.prototype.getPurpose = function(mobileWorker, params) {
+  
+  var currentLocation = mobileWorker.getCurrentLocation(); 
+  var point = util.toPoint(currentLocation);
+  var bin = this._findWasteBinCloserToLocation(point.latitude, point.longitude);
+  if (bin && bin.id) {
+    
+    var route = this.directionService.getRoute(currentLocation, bin.latitude + "," + bin.longitude);
+    var purpose = {
+
+      id: bin.id,
+      targetLocation: bin.latitude + "," + bin.longitude,
+      route:route
+    };
+
+    log.info("Purpose target location " +  JSON.stringify(purpose.targetLocation));
+    return purpose;
+  }
+  
+  return {}; 
+};
+
+/**
+ * Find a full bin with the shortest distance to the worker. Although this is not optimal (as it does not take into account
+ * traffic conditions and traffic directions), it is very fast to execute
+ * @method _findWasteBinCloserToLocation
+ */
+WasteBinProvider.prototype._findWasteBinCloserToLocation = function(lat, lon) {
+ 
+  log.info("WasteBinProvider --> WasteMgtService is " + JSON.stringify(this.wastemgtservice));
+  var shortest = {};
+  var minDistance = 1000000000000000; 
+  try {
+    
+    var transaction = apsdb.beginTransaction();   
+    var bins = this.wastemgtservice.listBins(lat + "," +  lon, 200, {lock:true});     
+    for (var i = 0; i < bins.length; i++) {
+
+      var distanceToBin = util.getDistanceFromLatLon(lat, lon, bins[i].latitude, bins[i].longitude);	
+      log.info("WasteBinProvider --> checking  " + JSON.stringify(bins[i]));
+      if  (distanceToBin < minDistance && bins[i].capacity <= MIN_CAPACITY && !bins[i].assigned) { 
+
+        minDistance = distanceToBin;
+        shortest = bins[i]; 
+      }
+    }      
+
+    // if bin found specify that it was assigned to a truck    
+    if (shortest.id){ 
+
+      log.info("WasteBinProvider found Bin " + JSON.stringify(shortest));
+      this.wastemgtservice.assignBin(shortest.id);
+      transaction.commit();
+    }else {
+      transaction.rollback();
+    } 
+  }catch(exception) {
+
+    log.error("WasteBinProvider._findWasteBinCloserToLocation: error occurred while searching for bin. " +  JSON.stringify(exception));
+    if (transaction) {     
+      transaction.rollback();
+    }    
+  }
+  
+  return shortest;
+};

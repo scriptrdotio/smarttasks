@@ -97,7 +97,7 @@ Car.prototype.run = function(start) {
             // erase car from old position
             self.erase();
             // move to next point in route
-            if (self.routeIndex <  currentPurpose.route.points.length) {
+            if (self.routeIndex <  currentPurpose.route.points.length - 1) {
               self.routeIndex += 1;
             }
 

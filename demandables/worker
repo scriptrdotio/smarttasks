@@ -96,11 +96,12 @@ Worker.prototype.run = function(start) {
       
       this.running = true;
       this.stopped = false;
+      this.purpose = null;
     }
     
-    // if the worker does not have a purpose of if the purpose can be reassigned while running
+    // if the worker does not have a purpose of if the purpose is empty of if the purpose can be reassigned while running
     // ask the provider for a purpose
-    if (!this.getPurpose() || this.isReassignable()) {
+    if (!this.getPurpose() || !this.getPurpose().targetLocation || this.isReassignable()) {
       this.setPurpose(this.provider.getPurpose(this));
     }
     

@@ -48,14 +48,6 @@ ParkingService.prototype.listParkingSpots = function(center, radius, params) {
 };
 
 /**
- * @method getType
- * @return {String} the name of the constructor of the current class
- */
-ParkingService.prototype.getType = function() {
-  return this.constructor.name;
-};
-
-/**
  * Abstract method that allows changing the availability status of a parking spot
  * This method should be overriden by children classes
  * @metod listParkingSpots

@@ -1,6 +1,6 @@
 var util = "/demandables/util";
 
-var MAX_CARS = 5;
+var MAX_CARS = 4;
 var PROCESS_PREFIX = "demandables_";
 var SIM_CENTER = {lat: 40.683009, lon:-73.998143}; 
 var SIM_RADIUS = 400; // meters

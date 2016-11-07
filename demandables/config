@@ -16,7 +16,7 @@ var services = {
     configuration: { // the configuration required by GoogleMapDirectionService
        
       url: "https://maps.googleapis.com/maps/api/directions/json",
-      key: "YOUR_GOOGLE_MAP_API_KEY"
+      key: ""
     }
   },
   
@@ -24,6 +24,13 @@ var services = {
     
     module: "/simulation/demandables/parkingsearch/parkingservicesimulator",
     clazz: "ParkingServiceSimulator",
+    configuration: {}
+  },
+  
+   "wastemgtservice": { // wastemgt is a service type, this section specifies what implementation to use and how to configure it
+    
+    module: "/simulation/demandables/wastemanagement/wastemgtservicesimulator",
+    clazz: "WasteMgtServiceSimulator",
     configuration: {}
   }
 };
@@ -48,8 +55,14 @@ var providers = {
   
   "ParkingSpotSeeker": {
     
-     module: "/demandables/providers/parkingspotprovider",
+    module: "/demandables/providers/parkingspotprovider",
     clazz: "ParkingSpotProvider"
+  },
+  
+  "WasteBinCollector": {
+    
+     module: "/demandables/providers/wastebinprovider",
+    clazz: "WasteBinProvider"
   }
 };
 

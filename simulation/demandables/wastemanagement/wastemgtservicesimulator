@@ -1,0 +1,236 @@
+var basewastemgtservice = require("/demandables/services/wastemgtservice/basewastemgtservice");
+var document = require("document");
+var log = require("log"); log.setLevel("info");
+
+const BIN_FILE = "bins";
+
+var bins = {
+  
+  //"b1":{id:"b1", latitude: 40.890848989, longitude: -73.864223918, capacity: 100, assigned: false},
+  //"b2":{id:"b2", latitude: 40.8488907878, longitude: -73.8771283938, capacity: 100, assigned: false},
+  "b3":{id:"b3", latitude: 40.85557, longitude: -73.887564999999995, capacity: 100, assigned: false},
+  //"b4":{id:"b4", latitude: 40.871864, longitude: -73.805549, capacity: 100, assigned: false},
+  //"b5":{id:"b5", latitude: 40.851889, longitude: -73.805549, capacity: 100},
+  //"b6":{id:"b6", latitude: 40.861525999999998, longitude: -73.880658999999994, capacity: 100, assigned: false},
+  //"b7":{id:"b7", latitude: 40.860754999999997, longitude: -73.880422999999993, capacity: 100, assigned: false},
+  //"b8":{id:"b8", latitude: 40.859644000000003, longitude: -73.880471999999997, capacity: 100, assigned: false},	
+  //"b9":{id:"b9", latitude: 40.862602000000003, longitude: -73.880171000000004, capacity: 100, assigned: false},	
+  "b10":{id:"b10", latitude: 40.826939, longitude: -73.922314, capacity: 100, assigned: false},	
+  "b11":{id:"b11", latitude: 40.826627, longitude: -73.922447, capacity: 100, assigned: false},	
+  //"b12":{id:"b12", latitude: 40.854322, longitude: -73.869764, capacity: 100, assigned: false},	
+  //"b13":{id:"b13", latitude: 40.854445, longitude: -73.869863, capacity: 100, assigned: false},	
+  //"b14":{id:"b14", latitude: 40.849760000000003, longitude: -73.880054999999999, capacity: 100, assigned: false},	
+  //"b15":{id:"b15", latitude: 40.850017000000001, longitude: -73.880035000000007, capacity: 100, assigned: false},	
+  "b16":{id:"b16", latitude: 40.819933, longitude: -73.887069, capacity: 100, assigned: false},	
+  //"b17":{id:"b17", latitude: 40.871706, longitude: -73.872741, capacity: 100, assigned: false},	
+  "b18":{id:"b18", latitude: 40.911295000000003, longitude: -73.907651999999999, capacity:100, assigned: false},
+  "b19":{id:"b19", latitude: 40.911236000000002, longitude: -73.907910000000001, capacity: 100, assigned: false},
+  "b20":{id:"b20", latitude: 40.82521, longitude: -73.88546, capacity: 100, assigned: false},
+  //"b21":{id:"b21", latitude: 40.890848989, longitude: -73.864223918, capacity: 100, assigned: false},
+  //"b22":{id:"b22", latitude: 40.871864, longitude: -73.805549, capacity: 100, assigned: false},
+  "b23":{id:"b23", latitude: 40.85557, longitude: -73.887564999999995, capacity: 100, assigned: false},
+  //"b24":{id:"b24", latitude: 40.8488907878, longitude: -73.8771283938, capacity: 100, assigned: false},
+  "b25":{id:"b25", latitude: 40.861525999999998, longitude: -73.880658999999994, capacity: 100, assigned: false},
+  "b26":{id:"b26", latitude: 40.860754999999997, longitude: -73.880422999999993, capacity: 100, assigned: false},
+  "b27":{id:"b27", latitude: 40.826939, longitude: -73.922314, capacity: 100, assigned: false},
+  "b28":{id:"b28", latitude: 40.854322, longitude: -73.869764, capacity: 100, assigned: false},
+  "b29":{id:"b29", latitude: 40.840115, longitude: -73.895513, capacity: 100, assigned: false},
+  "b30":{id:"b30", latitude: 40.835226, longitude: -73.895652, capacity: 100, assigned: false},
+  "b31":{id:"b31", latitude: 40.84133, longitude: -73.892702, capacity: 100, assigned: false},
+  "b32":{id:"b32", latitude: 40.840876, longitude: -73.892702, capacity: 100, assigned: false},
+  "b33":{id:"b33", latitude: 40.841123, longitude: -73.898056, capacity: 100, assigned: false},
+  "b34":{id:"b34", latitude: 40.849292, longitude: -73.902175, capacity: 100, assigned: false}
+};
+
+/**
+ * @class WasteMgtServiceSimulator
+ * @constructor
+ * @param {Object} [dto]
+ * @param {Boolean} [dto.inherits] : optional, only used for inheritence. Must be set to true in that case.
+ * @param {Object} [dto.configuration]: configuration object. Mandatory when creating an instance of the service
+ */
+function WasteMgtServiceSimulator(dto) {
+ 
+  if (dto.configuration.forceNew){
+    
+    log.info("WasteMgtServiceSimulator new configuration " +  JSON.stringify(dto.configuration.forceNew));
+    this.bins = bins;
+    this._persist();
+  }else { 
+    
+    log.info("WasteMgtServiceSimulator loading waste bin data");
+    this._load();
+  }
+}
+
+WasteMgtServiceSimulator.prototype = new basewastemgtservice.WasteMgtService({inherits:true});
+WasteMgtServiceSimulator.prototype.constructor = WasteMgtServiceSimulator;
+
+/**
+ * Set capacity to 100 and assigned to false
+ * @method reset
+ * @param {String} id: the bin id
+ */
+WasteMgtServiceSimulator.prototype.reset = function(id) {
+  
+  log.info("WasteMgtServiceSimulator resetting bin " +  id ); 
+  this.bins[id].assigned = false;
+  this.bins[id].capacity = 100;
+  this._persist();
+};
+
+/**
+ * Specify that a bin has been assigned to a worker and therefore, cannot be reassigned to another
+ * @method assign
+ * @param {String} id: the bin id
+ */
+WasteMgtServiceSimulator.prototype.assignBin = function(id) {
+  
+  log.info("WasteMgtServiceSimulator assigning bin " +  id ); 
+  this.bins[id].assigned = true;
+  this._persist();
+};
+
+/**
+ * Specify that a bin is not assigned to any worker anymore
+ * @method assign
+ * @param {String} id: the bin id
+ */
+WasteMgtServiceSimulator.prototype.unAssignBin = function(id) {
+  
+  log.info("WasteMgtServiceSimulator unassigning bin " +  id );
+  this.bins[id].assigned = false;
+  this._persist();
+};
+
+/**
+ * @metod listParkingSpots
+ * @param {String} center: lat,long
+ * @param {Number} radius: the distance to the point, in meters
+ * @param {Objects} params: additional specific parameters (optional)
+ * @eturn {Array} array of {(String)id, (Number)latitude, (Number)longitude, {Number)capacity}
+ */
+WasteMgtServiceSimulator.prototype.listBins = function(center, radius, params) {
+  
+  var c = center ? center : "1.1111,2.2222";
+  var r = radius ? radius : 10;
+  basewastemgtservice.WasteMgtService.prototype.listBins.call(this, c, r, params);
+  var lock = params ? params.lock : false;
+  this._load(lock);
+  var binArray = [];
+  for (var bin in this.bins){
+    binArray.push(this.bins[bin]);
+  }
+  
+  return binArray;
+};
+
+/**
+ * Abstract method that allows changing the remaining capacity of a bin
+ * This method should be overriden by children classes
+ * @metod listParkingSpots
+ * @param {String} id: the bin id
+ * @param {float} capacity
+ */
+WasteMgtServiceSimulator.prototype.setBinCapacity = function(id, capacity) {
+  
+  //basewastemgtservice.WasteMgtService.prototype.setBinCapacity.call(id, capacity);
+  if (this.bins[id]) {
+    
+    log.info("Changing bin " + id + " capacity to " + capacity);
+    this.bins[id].capacity = capacity;
+    this._persist();
+  }
+};
+
+/**
+ * @method getType
+ * @return {String} the name of the constructor of the current class
+ */
+WasteMgtServiceSimulator.prototype.getType = function() {
+  return this.constructor.name;
+};
+
+/**
+ * @method _persist
+ */
+WasteMgtServiceSimulator.prototype._persist = function() {  
+  
+  var myData =  JSON.stringify(this.bins);
+  var fields = {
+
+    "key": BIN_FILE,
+    "data": myData,
+    "meta.types": {
+      data: "text"
+    }
+  };
+
+  var saveResponse = document.save(fields);
+  if (saveResponse.metadata.status == "failure") {
+    log.error("WasteMgtServiceSimulator._persist: could not save bin data to document " + BIN_FILE + ", " + JSON.stringify(saveResponse));
+  }
+};
+
+/**
+ * @method _load
+ */
+WasteMgtServiceSimulator.prototype._load = function(lock) {
+  
+  //var getResponse = document.get(BIN_FILE);  
+  var query = {
+    
+    "apsdb.query": 'key = "' + BIN_FILE + '"',
+	"apsdb.queryFields": '*'   
+  };
+  
+  if (lock) {
+    query["apsdb.lock"] = "true";
+  }
+  
+  var getResponse = apsdb.callApi("Query", query, null);  
+  if (getResponse.metadata.status == "failure") {
+
+    var msg = "WasteMgtServiceSimulator._load: could not load persisted bin data from document " + BIN_FILE + ", " + JSON.stringify(getResponse);
+    log.error(msg);
+    throw {
+
+      errorCode: "Cannot_Load_Data",
+      errorDetail: msg
+    };
+  }
+
+   this.bins = JSON.parse(getResponse.result.documents[0].data);  
+};
+
+/**
+ * Remove data from storage
+ * @method clear
+ */
+WasteMgtServiceSimulator.prototype.clear = function() {  
+  
+  this.bins = {};
+  storage.global.wastemgtservice = {};
+};
+
+/**
+ * @function generateCapacity
+ */
+WasteMgtServiceSimulator.prototype.generateCapacity = function(id) {  
+  
+  var bin = this.bins[id]; log.info("Generating capacity for " + id + "(" + JSON.stringify(bin) + ")");
+  if (bin) {
+    
+    if (bin.capacity > 0) {
+    	
+      var usage = Math.round(Math.random() * 20); 
+      usage = usage > bin.capacity ? bin.capacity : usage; log.info("Generated: " + usage);
+      return bin.capacity - usage;
+    }
+    
+    // capacity is 0
+    return bin.capacity;
+  }else {
+     return 100;
+  }
+};

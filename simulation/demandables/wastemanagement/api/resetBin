@@ -1,0 +1,20 @@
+/**
+ * This scripts is used to reset a bin to its initial state (capacity 100, unassigned)
+ * @module resetBin
+ * @param {String} binId
+ */
+
+var log = require("log");
+log.setLevel("info");
+
+try {
+ 
+  var id = request.parameters.binId;
+  var serviceFactory = require("/demandables/services/servicefactory");
+  var wastemgtservice = serviceFactory.getService("wastemgtservice");
+  return wastemgtservice.reset(id);  
+}catch(exception){
+  
+  log.error("Error occurred while resetting waste bin");
+  log.error(JSON.stringify(exception));
+}

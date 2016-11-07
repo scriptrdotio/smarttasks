@@ -1,0 +1,34 @@
+var serviceFactory = require("/demandables/services/servicefactory");
+
+/**
+ * API to obtain the list of waste bins in a given area
+ * @module listBins
+ * @param {String} center: "lat,lon"
+ * @param {Number} radius: the distance in mfrom the center to search. Defines a circle to search within
+ * @param {String} params: a stringified map of key/values used as additional parameters 
+ */
+
+try {
+  
+  var center = request.parameters.center;
+  var radius = request.parameters.radius;
+  var params = request.parameters.params;
+  if (params) {
+    params = JSON.parse(params)
+  }
+
+  var wastemgtService = serviceFactory.getService("wastemgtservice");
+  return wastemgtService.listBins(center, radius, params);
+}catch(exception) {  
+  
+  if (exception.errorCode){
+  	return exception;  
+  }else {
+    
+    return {
+      
+      errorCode: "Error",
+      errorDetail: exception
+    };
+  }
+}

@@ -11,7 +11,7 @@ function ParkingSpotManager(dto) {
 }
 
 /**
- * @method getParkingSpots
+ * @method listParkingSpots
  */
 ParkingSpotManager.prototype.listParkingSpots = function() {
   return this.parkingSpots;
@@ -30,7 +30,7 @@ ParkingSpotManager.prototype.setParkingSpots = function(spotList) {
  * @param {Number} index
  * @return {Object} return the parking spot instance ath the specified index  (null if invalid index)
  */
-ParkingSpotManager.prototype.setParkingSpots = function(spot) {
+ParkingSpotManager.prototype.getParkingSpot = function(index) {
   
   if (index >= 0 && index < this.parkingSpots.length) {
  	return this.parkingSpots[index];   

@@ -1,0 +1,32 @@
+/**
+ * @module simulateUsage
+ * This scripts is used to simulate bin usage and thus the remaining capacity of the waste bins
+ */
+
+var log = require("log");
+log.setLevel("info");
+
+var transaction = null;
+try {
+ 
+  var serviceFactory = require("/demandables/services/servicefactory");
+  var wastemgtservice = serviceFactory.getService("wastemgtservice");
+  transaction = apsdb.beginTransaction(); 
+  var bins = wastemgtservice.listBins();
+  for (var i = 0; i < bins.length; i++) {
+    
+    var newCapacity = wastemgtservice.generateCapacity(bins[i].id);
+    log.info("scheduler - Generated new capacity for " + bins[i].id + ": " +  newCapacity);
+    wastemgtservice.setBinCapacity(bins[i].id, newCapacity);
+  }
+  
+  transaction.commit();
+  return bins;
+}catch(exception){
+  
+  log.error("Error occurred while updating waste bin capaciy");
+  log.error(JSON.stringify(exception));
+  if (transaction){
+    transaction.rollback();
+  }
+}

@@ -1,0 +1,5 @@
+//var log = require("log");
+//log.setLevel("info");
+
+var wastemanagementsimulator = require("/simulation/demandables/wastemanagement/wastemgtservicesimulator");
+return new wastemanagementsimulator.WasteMgtServiceSimulator({configuration:{forceNew:true}});

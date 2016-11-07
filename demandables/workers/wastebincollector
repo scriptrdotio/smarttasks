@@ -1,0 +1,49 @@
+var mobileworkerModule = require("../mobileworker");
+
+// Log intialization
+var log = require("log"); log.setLevel("info");
+
+/**
+ * Sample implementation
+ * The purpose of this worker is to find a full bin to collect. It is reassignable, i.e. if a full bin
+ * that is closer to the current bin set as purpose, the new bin is set as a new purpose
+ * by the provider
+ * @class WasteBinCollector
+ * @extends Worker
+ */
+function WasteBinCollector(dto) {  
+
+  dto = dto ? dto : {};
+  dto.reassignable = false;
+  mobileworkerModule.MobileWorker.call(this, dto);
+}
+
+WasteBinCollector.prototype = new mobileworkerModule.MobileWorker({inherits:true});
+WasteBinCollector.prototype.constructor = WasteBinCollector;
+
+WasteBinCollector.prototype.work = function() {
+  
+  var done = mobileworkerModule.MobileWorker.prototype.work.call(this); // never forget to return !
+  
+  // some waste bin are in parks and therefore the route to reach them might stop before at a distance that is bigger
+  // than the min radius that is considered to determine if the truck has reached its target. In that case, we need to
+  // check if the truck has reached the end of its route and if so, return true
+  // has reached the target
+  if (!done) { 
+    
+    var lastPointInRoute = this.purpose.route.points[this.purpose.route.points.length - 1]; 
+    log.info("Last point " + lastPointInRoute);
+    log.info("Current location " + this.currentLocation);
+    done = this.currentLocation == lastPointInRoute;
+  }
+  
+  return done;
+};
+
+/**
+ * Must be implemented identically by all subclasses
+ * @method getModule
+ */
+WasteBinCollector.prototype.getModule = function() {
+  return currentScript;
+};

@@ -63,7 +63,8 @@ function toPoint(location) {
  */
 function isPointInCircle(point1, point2, radius) {
   
-  var distance = getDistanceFromLatLon(point1.latitude, point1.longitude, point2.latitude, point2.longitude)
+  var distance = getDistanceFromLatLon(point1.latitude, point1.longitude, point2.latitude, point2.longitude);
+  var log = require("log");log.setLevel("info"); log.info("DISTANCE " + distance);
   return distance <= radius;
 }
 
